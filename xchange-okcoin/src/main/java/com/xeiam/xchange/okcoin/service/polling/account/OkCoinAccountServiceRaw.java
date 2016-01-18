@@ -1,4 +1,4 @@
-package com.xeiam.xchange.okcoin.service.polling;
+package com.xeiam.xchange.okcoin.service.polling.account;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -7,6 +7,7 @@ import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.okcoin.dto.account.OKCoinWithdraw;
 import com.xeiam.xchange.okcoin.dto.account.OkCoinFuturesUserInfoCross;
 import com.xeiam.xchange.okcoin.dto.account.OkCoinUserInfo;
+import com.xeiam.xchange.okcoin.service.polling.trade.OKCoinBaseTradePollingService;
 
 public class OkCoinAccountServiceRaw extends OKCoinBaseTradePollingService {
     private final String tradepwd;

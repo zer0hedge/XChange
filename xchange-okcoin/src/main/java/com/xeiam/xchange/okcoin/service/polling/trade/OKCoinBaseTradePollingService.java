@@ -1,4 +1,4 @@
-package com.xeiam.xchange.okcoin.service.polling;
+package com.xeiam.xchange.okcoin.service.polling.trade;
 
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.exceptions.ExchangeException;
@@ -6,6 +6,7 @@ import com.xeiam.xchange.okcoin.OkCoin;
 import com.xeiam.xchange.okcoin.OkCoinDigest;
 import com.xeiam.xchange.okcoin.OkCoinUtils;
 import com.xeiam.xchange.okcoin.dto.trade.OkCoinErrorResult;
+import com.xeiam.xchange.okcoin.service.polling.OkCoinBasePollingService;
 
 import si.mazi.rescu.RestProxyFactory;
 
