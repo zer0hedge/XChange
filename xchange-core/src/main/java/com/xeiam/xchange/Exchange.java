@@ -9,6 +9,7 @@ import com.xeiam.xchange.service.polling.marketdata.PollingMarketDataService;
 import com.xeiam.xchange.service.polling.trade.PollingTradeService;
 import com.xeiam.xchange.service.streaming.ExchangeStreamingConfiguration;
 import com.xeiam.xchange.service.streaming.StreamingExchangeService;
+import com.xeiam.xchange.service.streaming.marketdata.StreamingMarketDataService;
 
 import si.mazi.rescu.SynchronizedValueFactory;
 
@@ -83,6 +84,20 @@ public interface Exchange {
    * @return The exchange's "push" market data service
    */
   StreamingExchangeService getStreamingExchangeService(ExchangeStreamingConfiguration configuration);
+  
+  /**
+   * <p>
+   * A market data service typically consists of a regularly updated list of the available prices for the various symbols
+   * </p>
+   * <p>
+   * This is the streaming (non-blocking and event driven) version of the service, and requires an application to provide a suitable implementation of
+   * the listener to allow event callbacks to take place.
+   * </p>
+   *
+   * @param configuration The exchange-specific configuration to be applied after creation
+   * @return The exchange's "push" market data service
+   */
+  StreamingMarketDataService getStreamingMarketDataService(ExchangeStreamingConfiguration configuration);
 
   /**
    * <p>

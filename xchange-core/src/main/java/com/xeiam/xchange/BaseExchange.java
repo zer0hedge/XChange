@@ -19,6 +19,7 @@ import com.xeiam.xchange.service.polling.marketdata.PollingMarketDataService;
 import com.xeiam.xchange.service.polling.trade.PollingTradeService;
 import com.xeiam.xchange.service.streaming.ExchangeStreamingConfiguration;
 import com.xeiam.xchange.service.streaming.StreamingExchangeService;
+import com.xeiam.xchange.service.streaming.marketdata.StreamingMarketDataService;
 
 public abstract class BaseExchange implements Exchange {
 
@@ -30,7 +31,9 @@ public abstract class BaseExchange implements Exchange {
   protected PollingMarketDataService pollingMarketDataService;
   protected PollingTradeService pollingTradeService;
   protected PollingAccountService pollingAccountService;
+  
   protected StreamingExchangeService streamingExchangeService;
+  protected StreamingMarketDataService streamingMarketDataService;
 
   @Override
   public void applySpecification(ExchangeSpecification exchangeSpecification) {
@@ -179,6 +182,12 @@ public abstract class BaseExchange implements Exchange {
   public StreamingExchangeService getStreamingExchangeService(ExchangeStreamingConfiguration configuration) {
 
     return streamingExchangeService;
+  }  
+  
+  @Override
+  public StreamingMarketDataService getStreamingMarketDataService(ExchangeStreamingConfiguration configuration) {
+
+    return streamingMarketDataService;
   }
 
   @Override

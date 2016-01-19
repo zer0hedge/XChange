@@ -2,15 +2,17 @@ package com.xeiam.xchange.okcoin;
 
 import com.xeiam.xchange.BaseExchange;
 import com.xeiam.xchange.ExchangeSpecification;
-import com.xeiam.xchange.okcoin.service.polling.OkCoinAccountService;
-import com.xeiam.xchange.okcoin.service.polling.OkCoinFuturesAccountService;
-import com.xeiam.xchange.okcoin.service.polling.OkCoinFuturesMarketDataService;
-import com.xeiam.xchange.okcoin.service.polling.OkCoinFuturesTradeService;
-import com.xeiam.xchange.okcoin.service.polling.OkCoinMarketDataService;
-import com.xeiam.xchange.okcoin.service.polling.OkCoinTradeService;
+import com.xeiam.xchange.okcoin.service.polling.account.OkCoinAccountService;
+import com.xeiam.xchange.okcoin.service.polling.account.OkCoinFuturesAccountService;
+import com.xeiam.xchange.okcoin.service.polling.marketdata.OkCoinFuturesMarketDataService;
+import com.xeiam.xchange.okcoin.service.polling.marketdata.OkCoinMarketDataService;
+import com.xeiam.xchange.okcoin.service.polling.trade.OkCoinFuturesTradeService;
+import com.xeiam.xchange.okcoin.service.polling.trade.OkCoinTradeService;
 import com.xeiam.xchange.okcoin.service.streaming.OkCoinStreamingExchangeService;
+import com.xeiam.xchange.okcoin.service.streaming.marketdata.OkCoinStreamingMarketDataService;
 import com.xeiam.xchange.service.streaming.ExchangeStreamingConfiguration;
 import com.xeiam.xchange.service.streaming.StreamingExchangeService;
+import com.xeiam.xchange.service.streaming.marketdata.StreamingMarketDataService;
 
 import si.mazi.rescu.SynchronizedValueFactory;
 
@@ -99,6 +101,11 @@ public class OkCoinExchange extends BaseExchange {
   @Override
   public StreamingExchangeService getStreamingExchangeService(ExchangeStreamingConfiguration configuration) {
     return new OkCoinStreamingExchangeService(getExchangeSpecification(), configuration);
+  }
+  
+  @Override
+  public StreamingMarketDataService getStreamingMarketDataService(ExchangeStreamingConfiguration configuration) {
+    return new OkCoinStreamingMarketDataService(getExchangeSpecification(), configuration);
   }
 
   @Override
