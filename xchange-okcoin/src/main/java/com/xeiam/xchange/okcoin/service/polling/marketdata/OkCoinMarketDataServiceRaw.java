@@ -40,9 +40,9 @@ public class OkCoinMarketDataServiceRaw extends OkCoinBasePollingService {
     return okCoin.getFuturesTicker(OkCoinAdapters.adaptSymbol(currencyPair), prompt.getName());
   }
 
-  public OkCoinDepth getDepth(CurrencyPair currencyPair) throws IOException {
+  public OkCoinDepth getDepth(CurrencyPair currencyPair, Integer size) throws IOException {
 
-    return okCoin.getDepth("1", OkCoinAdapters.adaptSymbol(currencyPair));
+    return okCoin.getDepth("1", OkCoinAdapters.adaptSymbol(currencyPair), size.toString());
   }
 
   public OkCoinDepth getFuturesDepth(CurrencyPair currencyPair, FuturesContract prompt) throws IOException {

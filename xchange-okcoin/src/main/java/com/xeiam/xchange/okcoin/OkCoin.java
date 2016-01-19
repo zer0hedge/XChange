@@ -37,7 +37,7 @@ public interface OkCoin {
 
   @GET
   @Path("depth.do")
-  OkCoinDepth getDepth(@QueryParam("ok") String ok, @QueryParam("symbol") String symbol) throws IOException;
+  OkCoinDepth getDepth(@QueryParam("ok") String ok, @QueryParam("symbol") String symbol, @QueryParam("size") String size) throws IOException;
 
   @GET
   @Path("future_depth.do")

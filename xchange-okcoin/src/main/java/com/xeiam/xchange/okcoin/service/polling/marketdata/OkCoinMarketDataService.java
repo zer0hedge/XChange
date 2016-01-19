@@ -30,7 +30,11 @@ public class OkCoinMarketDataService extends OkCoinMarketDataServiceRaw implemen
 
   @Override
   public OrderBook getOrderBook(CurrencyPair currencyPair, Object... args) throws IOException {
-    return OkCoinAdapters.adaptOrderBook(getDepth(currencyPair), currencyPair);
+    if (args.length != 0)
+      return OkCoinAdapters.adaptOrderBook(getDepth(currencyPair, (Integer) args[0]), currencyPair);
+    else
+      return OkCoinAdapters.adaptOrderBook(getDepth(currencyPair, 200), currencyPair);
+
   }
 
   @Override
