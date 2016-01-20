@@ -24,12 +24,17 @@ public abstract class Order {
   }
 
   /**
-    *  Set of order flags
+    *  Interface for an order flag
     *  Can be used, for example, to indicate order status (filled, partially filled, cancelled etc)
    */
  
   public interface IOrderFlag {
     
+    public enum OrderFlagName {
+      ORDER_STATUS
+    }
+    
+    public OrderFlagName getType();
     public int getFlagValue();
     
   };
