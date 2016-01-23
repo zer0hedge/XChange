@@ -23,20 +23,7 @@ public abstract class Order {
     ASK
   }
 
-  /**
-    *  Interface for an order flag
-    *  Can be used, for example, to indicate order status (filled, partially filled, cancelled etc)
-   */
- 
-  public interface IOrderFlag {
-    
-    public enum OrderFlagName {
-      ORDER_STATUS
-    }
-    
-    public OrderFlagName getType();
-    public int getFlagValue();
-    
+  public interface IOrderFlags {
   };
 
   /**
@@ -67,7 +54,7 @@ public abstract class Order {
   /**
    * Any applicable order flags
    */
-  private final Set<IOrderFlag> flags = new HashSet<IOrderFlag>();
+  private final Set<IOrderFlags> flags = new HashSet<IOrderFlags>();
 
   /**
    * @param type Either BID (buying) or ASK (selling)
@@ -119,15 +106,15 @@ public abstract class Order {
     return timestamp;
   }
 
-  public Set<IOrderFlag> getOrderFlags() {
+  public Set<IOrderFlags> getOrderFlags() {
     return flags;
   }
 
-  public void addOrderFlag(IOrderFlag flag) {
+  public void addOrderFlag(IOrderFlags flag) {
     flags.add(flag);
   }
 
-  public void setOrderFlags(Set<IOrderFlag> flags) {
+  public void setOrderFlags(Set<IOrderFlags> flags) {
     this.flags.clear();
     if (flags != null) {
       this.flags.addAll(flags);
@@ -189,7 +176,7 @@ public abstract class Order {
     protected String id;
     protected Date timestamp;
 
-    protected final Set<IOrderFlag> flags = new HashSet<IOrderFlag>();
+    protected final Set<IOrderFlags> flags = new HashSet<IOrderFlags>();
 
     protected Builder(OrderType orderType, CurrencyPair currencyPair) {
       this.orderType = orderType;
@@ -221,12 +208,12 @@ public abstract class Order {
       return this;
     }
 
-    public Builder flags(Set<IOrderFlag> flags) {
+    public Builder flags(Set<IOrderFlags> flags) {
       this.flags.addAll(flags);
       return this;
     }
 
-    public Builder flag(IOrderFlag flag) {
+    public Builder flag(IOrderFlags flag) {
       this.flags.add(flag);
       return this;
     }
