@@ -81,7 +81,7 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
   }
 
   @Override
-  public LimitOrder getOrder(String orderId)
+  public synchronized LimitOrder getOrder(String orderId)
       throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException {
 
     Map<String, String> params = new HashMap<>();
@@ -90,7 +90,7 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
     params.put("order_id", orderId);
     String sign = signatureCreator.digestNameValueParamMap(new ArrayList<>(params.entrySet()));
     params.put("sign", sign);
-    getSocketBase().addChannel(channelProvider.getCancelOrder(), params);
+    getSocketBase().addChannel(channelProvider.getOrderInfo(), params);
 
     try {
       OkCoinOrdersResult result = (OkCoinOrdersResult) getNextEvent().getPayload();

@@ -32,7 +32,7 @@ class SpotChannelProvider implements ChannelProvider {
   public String getOrderInfo() {
     String currencyString = exchangeSpecification.getExchangeSpecificParametersItem("Use_Intl").equals(false) ? "cny"
         : "usd";
-    return "ok_spot" + currencyString + "order_info";
+    return "ok_spot" + currencyString + "_order_info";
   }
 
   @Override
