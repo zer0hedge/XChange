@@ -1,4 +1,4 @@
-package com.xeiam.xchange.okcoin.service.marketdata;
+package com.xeiam.xchange.okcoin.service.streaming.marketdata;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -11,10 +11,10 @@ import com.xeiam.xchange.ExchangeSpecification;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.marketdata.Ticker;
 import com.xeiam.xchange.okcoin.OkCoinExchange;
-import com.xeiam.xchange.okcoin.service.streaming.OkCoinExchangeStreamingConfiguration;
+import com.xeiam.xchange.okcoin.service.streaming.OkCoinStreamingConfiguration;
 import com.xeiam.xchange.service.streaming.ExchangeEvent;
 import com.xeiam.xchange.service.streaming.ExchangeEventType;
-import com.xeiam.xchange.service.streaming.StreamingExchangeService;
+import com.xeiam.xchange.service.streaming.marketdata.StreamingMarketDataService;
 
 /**
  * @author timmolter
@@ -27,10 +27,11 @@ public class TickerStreamingIntegration {
     exSpec.setExchangeSpecificParametersItem("Use_Intl", false);
 
     Exchange exchange = ExchangeFactory.INSTANCE.createExchange(exSpec);
-    final StreamingExchangeService service = exchange.getStreamingExchangeService(new OkCoinExchangeStreamingConfiguration());
+    final StreamingMarketDataService service = exchange.getStreamingMarketDataService(new OkCoinStreamingConfiguration());
 
     service.connect();
-
+    service.addTickerChannel(CurrencyPair.BTC_CNY);
+    
     boolean gotTicker = false;
 
     while (!gotTicker) {
@@ -59,10 +60,11 @@ public class TickerStreamingIntegration {
     Exchange exchange = ExchangeFactory.INSTANCE.createExchange(exSpec);
 
     //This constructor hack has AIDS
-    final StreamingExchangeService service = exchange
-        .getStreamingExchangeService(new OkCoinExchangeStreamingConfiguration(new CurrencyPair[] { CurrencyPair.BTC_USD }));
+    final StreamingMarketDataService service = exchange
+        .getStreamingMarketDataService(new OkCoinStreamingConfiguration(new CurrencyPair[] { CurrencyPair.BTC_USD }));
 
     service.connect();
+    service.addTickerChannel(CurrencyPair.BTC_USD);
 
     boolean gotTicker = false;
 

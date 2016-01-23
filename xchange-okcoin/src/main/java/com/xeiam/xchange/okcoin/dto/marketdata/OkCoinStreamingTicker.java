@@ -13,9 +13,9 @@ public class OkCoinStreamingTicker extends OkCoinTicker {
 
   public OkCoinStreamingTicker(@JsonProperty("high") final BigDecimal high, @JsonProperty("low") final BigDecimal low,
       @JsonProperty("buy") final BigDecimal buy, @JsonProperty("sell") final BigDecimal sell, @JsonProperty("last") final BigDecimal last,
-      @JsonProperty("vol") final BigDecimal vol, @JsonProperty("timestamp") long timestamp, @JsonProperty("hold_amount") int holdAmount,
+      @JsonProperty("vol") final String vol, @JsonProperty("timestamp") long timestamp, @JsonProperty("hold_amount") int holdAmount,
       @JsonProperty("unitAmount") final BigDecimal unitAmount, @JsonProperty("contractId") String contractId) {
-	super(high, low, buy, sell, last, vol);
+	super(high, low, buy, sell, last, new BigDecimal(vol.replace(",", "")));
     this.holdAmount = holdAmount;
     this.timestamp = timestamp;
     this.unitAmount = unitAmount;

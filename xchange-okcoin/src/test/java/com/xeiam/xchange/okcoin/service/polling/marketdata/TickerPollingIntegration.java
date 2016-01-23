@@ -1,4 +1,4 @@
-package com.xeiam.xchange.okcoin.service.marketdata;
+package com.xeiam.xchange.okcoin.service.polling.marketdata;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 

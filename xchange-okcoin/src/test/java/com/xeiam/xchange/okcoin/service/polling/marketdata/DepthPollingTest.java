@@ -1,4 +1,4 @@
-package com.xeiam.xchange.okcoin.service.marketdata;
+package com.xeiam.xchange.okcoin.service.polling.marketdata;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
