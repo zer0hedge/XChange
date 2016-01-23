@@ -25,6 +25,10 @@ public abstract class Order {
 
   public interface IOrderFlags {
   };
+  
+  public enum DefaultOrderFlags implements IOrderFlags {
+    CANCELLED
+  }
 
   /**
    * Order type i.e. bid or ask
