@@ -8,11 +8,11 @@ import com.xeiam.xchange.okcoin.service.polling.marketdata.OkCoinFuturesMarketDa
 import com.xeiam.xchange.okcoin.service.polling.marketdata.OkCoinMarketDataService;
 import com.xeiam.xchange.okcoin.service.polling.trade.OkCoinFuturesTradeService;
 import com.xeiam.xchange.okcoin.service.polling.trade.OkCoinTradeService;
-import com.xeiam.xchange.okcoin.service.streaming.OkCoinStreamingExchangeService;
 import com.xeiam.xchange.okcoin.service.streaming.marketdata.OkCoinStreamingMarketDataService;
+import com.xeiam.xchange.okcoin.service.streaming.trade.OkCoinStreamingTradeService;
 import com.xeiam.xchange.service.streaming.ExchangeStreamingConfiguration;
-import com.xeiam.xchange.service.streaming.StreamingExchangeService;
 import com.xeiam.xchange.service.streaming.marketdata.StreamingMarketDataService;
+import com.xeiam.xchange.service.streaming.trade.StreamingTradeService;
 
 import si.mazi.rescu.SynchronizedValueFactory;
 
@@ -99,15 +99,13 @@ public class OkCoinExchange extends BaseExchange {
   }
 
   @Override
-  public StreamingExchangeService getStreamingExchangeService(ExchangeStreamingConfiguration configuration) {
-    return new OkCoinStreamingExchangeService(getExchangeSpecification(), configuration);
-  }
-  
-  @Override
   public StreamingMarketDataService getStreamingMarketDataService(ExchangeStreamingConfiguration configuration) {
-    return new OkCoinStreamingMarketDataService(getExchangeSpecification(), configuration);
+    return new OkCoinStreamingMarketDataService(this, configuration);
   }
-
+  @Override
+  public StreamingTradeService getStreamingTradeService(ExchangeStreamingConfiguration configuration) {
+    return new OkCoinStreamingTradeService(this, configuration);
+  }
   @Override
   public SynchronizedValueFactory<Long> getNonceFactory() {
     // This exchange doesn't use a nonce for authentication
@@ -128,4 +126,5 @@ public class OkCoinExchange extends BaseExchange {
 
     }
   }
+
 }

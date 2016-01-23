@@ -57,7 +57,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
     moniter.updateTime();
     if (!handshaker.isHandshakeComplete()) {
       handshaker.finishHandshake(ch, (FullHttpResponse) msg);
-      log.debug("WebSocket Client connected!");
+      log.info("WebSocket Client connected!");
       handshakeFuture.setSuccess();
       return;
     }

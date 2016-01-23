@@ -28,4 +28,19 @@ class FuturesChannelProvider implements ChannelProvider {
   public String getTrades(CurrencyPair currencyPair) {
     return "ok_" + pairToString(currencyPair) + "_future_trade_v1_" + contractName;
   }
+  
+  @Override
+  public String getOrderInfo() {
+	  return "ok_futureusd_order_info";
+  }
+  
+  @Override
+  public String getPlaceLimitOrder() {
+    return "ok_futureusd_trade";
+  } 
+  
+  @Override
+  public String getCancelOrder() {
+    return "ok_futuresusd_cancel_order";
+  }
 }

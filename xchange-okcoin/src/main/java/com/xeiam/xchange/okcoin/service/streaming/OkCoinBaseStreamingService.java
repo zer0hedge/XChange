@@ -5,42 +5,40 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import org.java_websocket.WebSocket.READYSTATE;
 
+import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.ExchangeSpecification;
-import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.okcoin.OkCoinExchange;
 import com.xeiam.xchange.service.streaming.ExchangeEvent;
 import com.xeiam.xchange.service.streaming.ExchangeStreamingConfiguration;
 import com.xeiam.xchange.service.streaming.StreamingExchangeService;
 
-public class OkCoinStreamingExchangeService implements StreamingExchangeService {
-  private final WebSocketBase socketBase;
-  private final BlockingQueue<ExchangeEvent> eventQueue = new LinkedBlockingQueue<ExchangeEvent>();
-  private final OkCoinExchangeStreamingConfiguration exchangeStreamingConfiguration;
-  private final ChannelProvider channelProvider;
+public class OkCoinBaseStreamingService implements StreamingExchangeService {
+  private WebSocketBase socketBase;
+  protected final ChannelProvider channelProvider;
+  private final BlockingQueue<ExchangeEvent> marketDataEventQueue = new LinkedBlockingQueue<ExchangeEvent>();
 
-  public OkCoinStreamingExchangeService(ExchangeSpecification exchangeSpecification, ExchangeStreamingConfiguration exchangeStreamingConfiguration) {
-    this.exchangeStreamingConfiguration = (OkCoinExchangeStreamingConfiguration) exchangeStreamingConfiguration;
+  private final OkCoinStreamingConfiguration exchangeStreamingConfiguration;
 
+  public OkCoinBaseStreamingService(Exchange exchange, ExchangeStreamingConfiguration streamingConfiguration) {
+    
+    this.exchangeStreamingConfiguration = (OkCoinStreamingConfiguration) streamingConfiguration;
+
+    ExchangeSpecification exchangeSpecification = exchange.getExchangeSpecification();
     String sslUri = (String) exchangeSpecification.getExchangeSpecificParametersItem("Websocket_SslUri");
     boolean useFutures = (Boolean) exchangeSpecification.getExchangeSpecificParametersItem("Use_Futures");
 
     channelProvider = useFutures ? new FuturesChannelProvider(OkCoinExchange.futuresContractOfConfig(exchangeSpecification))
-        : new SpotChannelProvider();
-
-    WebSocketService socketService = new OkCoinWebSocketService(eventQueue, channelProvider,
+        : new SpotChannelProvider(exchangeSpecification);
+    WebSocketService socketService = new OkCoinWebSocketService(marketDataEventQueue,
+        channelProvider,
         this.exchangeStreamingConfiguration.getMarketDataCurrencyPairs());
+    
     socketBase = new WebSocketBase(sslUri, socketService);
   }
 
   @Override
   public void connect() {
     socketBase.start();
-
-    for (CurrencyPair currencyPair : exchangeStreamingConfiguration.getMarketDataCurrencyPairs()) {
-      socketBase.addChannel(channelProvider.getTicker(currencyPair));
-      socketBase.addChannel(channelProvider.getDepth(currencyPair));
-      socketBase.addChannel(channelProvider.getTrades(currencyPair));
-    }
   }
 
   @Override
@@ -49,7 +47,7 @@ public class OkCoinStreamingExchangeService implements StreamingExchangeService 
 
   @Override
   public ExchangeEvent getNextEvent() throws InterruptedException {
-    return eventQueue.take();
+    return marketDataEventQueue.take();
   }
 
   /**
@@ -57,7 +55,7 @@ public class OkCoinStreamingExchangeService implements StreamingExchangeService 
    */
   @Override
   public int countEventsAvailable() {
-    return eventQueue.size();
+    return marketDataEventQueue.size();
   }
 
   @Override
@@ -67,5 +65,17 @@ public class OkCoinStreamingExchangeService implements StreamingExchangeService 
   @Override
   public READYSTATE getWebSocketStatus() {
     return READYSTATE.OPEN;
+  }
+
+  public WebSocketBase getSocketBase() {
+    return socketBase;
+  }
+
+  public void setSocketBase(WebSocketBase socketBase) {
+    this.socketBase = socketBase;
+  }
+
+  public BlockingQueue<ExchangeEvent> getMarketDataEventQueue() {
+    return marketDataEventQueue;
   }
 }

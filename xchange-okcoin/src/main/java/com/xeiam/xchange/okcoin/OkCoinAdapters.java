@@ -5,6 +5,8 @@ import static com.xeiam.xchange.currency.Currency.LTC;
 import static com.xeiam.xchange.currency.Currency.USD;
 
 import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -12,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.xeiam.xchange.currency.Currency;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.Order.OrderType;
@@ -43,19 +46,12 @@ import com.xeiam.xchange.okcoin.dto.trade.OkCoinOrderResult;
 public final class OkCoinAdapters {
 
   private static final Balance zeroUsdBalance = new Balance(USD, BigDecimal.ZERO);
+  public static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 
   private OkCoinAdapters() {
 
   }
 
-  private static BigDecimal getOrZero(String key, Map<String, BigDecimal> map) {
-
-    if (map != null && map.containsKey(key)) {
-      return map.get(key);
-    } else {
-      return BigDecimal.ZERO;
-    }
-  }
 
   public static String adaptSymbol(CurrencyPair currencyPair) {
 
@@ -119,7 +115,7 @@ public final class OkCoinAdapters {
       builders.put(borrowed.getKey(), builder.borrowed(borrowed.getValue()));
     }
 
-    List<Balance> wallet = new ArrayList(builders.size());
+    List<Balance> wallet = new ArrayList<Balance>(builders.size());
 
     for (Balance.Builder builder : builders.values()) {
       wallet.add(builder.build());
@@ -244,5 +240,29 @@ public final class OkCoinAdapters {
 
     return new UserTrade(adaptOrderType(order.getType()), order.getDealAmount(), adaptSymbol(order.getSymbol()), order.getPrice(),
         order.getCreatedDate(), null, String.valueOf(order.getOrderId()), null, (Currency)null);
+  }
+
+  public static Trade adaptStreamingTrade(JsonNode trade, CurrencyPair currencyPair) {
+    String id = trade.get(0).asText();
+    double price = trade.get(1).asDouble();
+    double amount = trade.get(2).asDouble();
+    String dateString = (trade.get(3).asText());
+    OrderType orderType = trade.get(4).asText().equals("bid") ? OrderType.BID : OrderType.ASK;
+  
+    Date tradeDate = null;
+    try {
+  
+      tradeDate = OkCoinAdapters.dateFormat.parse(dateString);
+      //TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+  
+      // dateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Hong Kong"));
+      // dateFormat.setTimeZone("Asia/Hong Kong");
+  
+      tradeDate.setTime(OkCoinUtils.toEpoch(tradeDate, "VST"));
+    } catch (ParseException e) {
+      tradeDate = null;
+    }
+  
+    return new Trade(orderType, BigDecimal.valueOf(amount), currencyPair, BigDecimal.valueOf(price), tradeDate, id);
   }
 }

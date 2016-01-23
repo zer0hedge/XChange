@@ -3,7 +3,7 @@ package com.xeiam.xchange.okcoin.service.streaming;
 import com.xeiam.xchange.service.streaming.ExchangeEvent;
 import com.xeiam.xchange.service.streaming.ExchangeEventType;
 
-class OkCoinExchangeEvent implements ExchangeEvent {
+public class OkCoinExchangeEvent implements ExchangeEvent {
   private final String rawData;
   private final Object payload;
   private final ExchangeEventType exchangeEventType;
