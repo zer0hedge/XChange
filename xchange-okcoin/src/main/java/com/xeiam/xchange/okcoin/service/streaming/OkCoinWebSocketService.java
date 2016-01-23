@@ -18,6 +18,7 @@ import com.xeiam.xchange.okcoin.dto.marketdata.OkCoinDepth;
 import com.xeiam.xchange.okcoin.dto.marketdata.OkCoinStreamingDepth;
 import com.xeiam.xchange.okcoin.dto.marketdata.OkCoinStreamingTicker;
 import com.xeiam.xchange.okcoin.dto.marketdata.OkCoinTickerResponse;
+import com.xeiam.xchange.okcoin.dto.trade.OkCoinOrdersResult;
 import com.xeiam.xchange.okcoin.dto.trade.OkCoinTradeResult;
 import com.xeiam.xchange.service.streaming.ExchangeEvent;
 import com.xeiam.xchange.service.streaming.ExchangeEventType;
@@ -74,11 +75,26 @@ public class OkCoinWebSocketService implements WebSocketService {
 
     } else if (node.get("channel").textValue().equals(channelProvider.getCancelOrder())) {
       parseCancelOrderResponse(node);
+
+    } else if (node.get("channel").textValue().equals(channelProvider.getOrderInfo())) {
+      parseOrderInfoResponse(node);
     }
 
   }
 
+  private void parseOrderInfoResponse(JsonNode node) throws JsonParseException, JsonMappingException, IOException {
+    
+    if (!node.has("errorcode")) {
+      OkCoinOrdersResult result = mapper.readValue(node.get("data").toString(),
+          OkCoinOrdersResult.class);
+      putEvent(ExchangeEventType.USER_ORDER, result);
+    } else {
+      putEvent(ExchangeEventType.ERROR, new OkCoinOrdersResult(false, node.get("errorcode").asInt(), null));
+    }
+  }
+
   private void parseCancelOrderResponse(JsonNode node) throws JsonParseException, JsonMappingException, IOException {
+    
     if (!node.has("errorcode")) {
       OkCoinTradeResult result = mapper.readValue(node.get("data").toString(), OkCoinTradeResult.class);
       putEvent(ExchangeEventType.ORDER_ADDED, result);
@@ -89,6 +105,7 @@ public class OkCoinWebSocketService implements WebSocketService {
 
   private void parseLimitOrderPlacementResponse(JsonNode node)
       throws JsonParseException, JsonMappingException, IOException {
+    
     if (!node.has("errorcode")) {
       OkCoinTradeResult result = mapper.readValue(node.get("data").toString(), OkCoinTradeResult.class);
       putEvent(ExchangeEventType.ORDER_ADDED, result);

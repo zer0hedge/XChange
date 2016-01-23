@@ -17,7 +17,7 @@ import com.xeiam.xchange.okcoin.dto.marketdata.OkCoinDepth;
 import com.xeiam.xchange.okcoin.dto.marketdata.OkCoinTickerResponse;
 import com.xeiam.xchange.okcoin.dto.marketdata.OkCoinTrade;
 import com.xeiam.xchange.okcoin.dto.trade.OkCoinFuturesOrderResult;
-import com.xeiam.xchange.okcoin.dto.trade.OkCoinOrderResult;
+import com.xeiam.xchange.okcoin.dto.trade.OkCoinOrdersResult;
 import com.xeiam.xchange.okcoin.dto.trade.OkCoinPositionResult;
 import com.xeiam.xchange.okcoin.dto.trade.OkCoinTradeResult;
 
@@ -98,7 +98,7 @@ public interface OkCoin {
 
   @POST
   @Path("order_info.do")
-  OkCoinOrderResult getOrder(@FormParam("api_key") String api_key, @FormParam("order_id") long orderId, @FormParam("symbol") String symbol,
+  OkCoinOrdersResult getOrder(@FormParam("api_key") String api_key, @FormParam("order_id") long orderId, @FormParam("symbol") String symbol,
       @FormParam("sign") ParamsDigest sign) throws IOException;
 
   @POST
@@ -120,7 +120,7 @@ public interface OkCoin {
 
   @POST
   @Path("order_history.do")
-  OkCoinOrderResult getOrderHistory(@FormParam("api_key") String apikey, @FormParam("symbol") String symbol, @FormParam("status") String status,
+  OkCoinOrdersResult getOrderHistory(@FormParam("api_key") String apikey, @FormParam("symbol") String symbol, @FormParam("status") String status,
       @FormParam("current_page") String currentPage, @FormParam("page_length") String pageLength, @FormParam("sign") ParamsDigest sign)
           throws IOException;
 

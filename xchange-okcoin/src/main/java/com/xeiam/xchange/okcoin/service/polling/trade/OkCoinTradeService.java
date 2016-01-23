@@ -18,7 +18,7 @@ import com.xeiam.xchange.dto.trade.UserTrades;
 import com.xeiam.xchange.exceptions.ExchangeException;
 import com.xeiam.xchange.okcoin.OkCoinAdapters;
 import com.xeiam.xchange.okcoin.OkCoinUtils;
-import com.xeiam.xchange.okcoin.dto.trade.OkCoinOrderResult;
+import com.xeiam.xchange.okcoin.dto.trade.OkCoinOrdersResult;
 import com.xeiam.xchange.okcoin.dto.trade.OkCoinTradeResult;
 import com.xeiam.xchange.service.polling.trade.PollingTradeService;
 import com.xeiam.xchange.service.polling.trade.params.DefaultTradeHistoryParamPaging;
@@ -47,12 +47,12 @@ public class OkCoinTradeService extends OkCoinTradeServiceRaw implements Polling
 
     List<CurrencyPair> exchangeSymbols = getExchangeSymbols();
 
-    List<OkCoinOrderResult> orderResults = new ArrayList<OkCoinOrderResult>(exchangeSymbols.size());
+    List<OkCoinOrdersResult> orderResults = new ArrayList<OkCoinOrdersResult>(exchangeSymbols.size());
 
     for (int i = 0; i < exchangeSymbols.size(); i++) {
       CurrencyPair symbol = exchangeSymbols.get(i);
       log.debug("Getting order: {}", symbol);
-      OkCoinOrderResult orderResult = getOrder(-1, OkCoinAdapters.adaptSymbol(symbol));
+      OkCoinOrdersResult orderResult = getOrder(-1, OkCoinAdapters.adaptSymbol(symbol));
       if (orderResult.getOrders().length > 0) {
         orderResults.add(orderResult);
       }
@@ -138,7 +138,7 @@ public class OkCoinTradeService extends OkCoinTradeServiceRaw implements Polling
       pair = useIntl ? CurrencyPair.BTC_USD : CurrencyPair.BTC_CNY;
     }
 
-    OkCoinOrderResult orderHistory = getOrderHistory(OkCoinAdapters.adaptSymbol(pair), "1", toString(pageNumber), toString(pageLength));
+    OkCoinOrdersResult orderHistory = getOrderHistory(OkCoinAdapters.adaptSymbol(pair), "1", toString(pageNumber), toString(pageLength));
     return OkCoinAdapters.adaptTrades(orderHistory);
   }
 

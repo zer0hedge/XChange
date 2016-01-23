@@ -11,8 +11,10 @@ import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.exceptions.ExchangeException;
 import com.xeiam.xchange.exceptions.NotAvailableFromExchangeException;
 import com.xeiam.xchange.exceptions.NotYetImplementedForExchangeException;
+import com.xeiam.xchange.okcoin.OkCoinAdapters;
 import com.xeiam.xchange.okcoin.OkCoinDigest;
 import com.xeiam.xchange.okcoin.OkCoinStreamingUtils;
+import com.xeiam.xchange.okcoin.dto.trade.OkCoinOrdersResult;
 import com.xeiam.xchange.okcoin.dto.trade.OkCoinTradeResult;
 import com.xeiam.xchange.okcoin.service.streaming.OkCoinBaseStreamingService;
 import com.xeiam.xchange.service.streaming.ExchangeStreamingConfiguration;
@@ -81,8 +83,23 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
   @Override
   public LimitOrder getOrder(String orderId)
       throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException {
-    // TODO Auto-generated method stub
-    return null;
+
+    Map<String, String> params = new HashMap<>();
+    params.put("api_key", apikey);
+    params.put("symbol", knownOrders.get(orderId).getCurrencyPair().toString().replace("/", "_").toLowerCase());
+    params.put("order_id", orderId);
+    String sign = signatureCreator.digestNameValueParamMap(new ArrayList<>(params.entrySet()));
+    params.put("sign", sign);
+    getSocketBase().addChannel(channelProvider.getCancelOrder(), params);
+
+    try {
+      OkCoinOrdersResult result = (OkCoinOrdersResult) getNextEvent().getPayload();
+      if (result.isResult())
+        return OkCoinAdapters.adaptOrder(result.getOrders()[0]);
+        throw new ExchangeException(OkCoinStreamingUtils.getErrorMessage(result.getErrorCode()));
+    } catch (InterruptedException e) {
+      return null;
+    }
   }
 
   private Map<String, LimitOrder> knownOrders = new HashMap<>();

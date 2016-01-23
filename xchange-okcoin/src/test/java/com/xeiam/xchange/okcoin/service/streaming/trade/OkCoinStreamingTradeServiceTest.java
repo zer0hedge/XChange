@@ -18,6 +18,8 @@ import com.xeiam.xchange.exceptions.ExchangeException;
 import com.xeiam.xchange.exceptions.NotAvailableFromExchangeException;
 import com.xeiam.xchange.exceptions.NotYetImplementedForExchangeException;
 import com.xeiam.xchange.okcoin.OkCoinExchange;
+import com.xeiam.xchange.okcoin.dto.trade.OkCoinOrder;
+import com.xeiam.xchange.okcoin.dto.trade.OkCoinOrdersResult;
 import com.xeiam.xchange.okcoin.dto.trade.OkCoinTradeResult;
 import com.xeiam.xchange.okcoin.service.streaming.OkCoinExchangeEvent;
 import com.xeiam.xchange.okcoin.service.streaming.OkCoinStreamingConfiguration;
@@ -110,4 +112,49 @@ public class OkCoinStreamingTradeServiceTest {
         .put(new OkCoinExchangeEvent(ExchangeEventType.ORDER_CANCELED, new OkCoinTradeResult(false, 10009, 0)));
     sut.cancelOrder(id);
   }
+
+  @Test
+  public void testGetOrder() throws NotAvailableFromExchangeException, NotYetImplementedForExchangeException,
+      ExchangeException, IOException, InterruptedException {
+
+    LimitOrder limitOrder = mock(LimitOrder.class);
+    when(limitOrder.getCurrencyPair()).thenReturn(CurrencyPair.BTC_USD);
+    when(limitOrder.getLimitPrice()).thenReturn(BigDecimal.TEN);
+    when(limitOrder.getTradableAmount()).thenReturn(BigDecimal.TEN);
+
+    sut.getMarketDataEventQueue()
+        .put(new OkCoinExchangeEvent(ExchangeEventType.ORDER_ADDED, new OkCoinTradeResult(true, 0, 100)));
+    String id = sut.placeLimitOrder(limitOrder);
+
+    OkCoinOrder serverOrder = new OkCoinOrder(100L, 1, "btc_usd", "", limitOrder.getLimitPrice(),
+        limitOrder.getLimitPrice(), limitOrder.getTradableAmount(), limitOrder.getTradableAmount().divide(new BigDecimal("2")),
+        null);
+
+    sut.getMarketDataEventQueue().put(new OkCoinExchangeEvent(ExchangeEventType.USER_ORDER,
+        new OkCoinOrdersResult(true, 0, new OkCoinOrder[] { serverOrder })));
+    LimitOrder response = sut.getOrder(id);
+    assertEquals(id, response.getId());
+    assertEquals(limitOrder.getTradableAmount().divide(new BigDecimal("2")), response.getTradableAmount());
+
+  }
+
+  @Test(expected=ExchangeException.class)
+  public void testGetOrderFail() throws NotAvailableFromExchangeException, NotYetImplementedForExchangeException,
+      ExchangeException, IOException, InterruptedException {
+
+    LimitOrder limitOrder = mock(LimitOrder.class);
+    when(limitOrder.getCurrencyPair()).thenReturn(CurrencyPair.BTC_USD);
+    when(limitOrder.getLimitPrice()).thenReturn(BigDecimal.TEN);
+    when(limitOrder.getTradableAmount()).thenReturn(BigDecimal.TEN);
+
+    sut.getMarketDataEventQueue()
+        .put(new OkCoinExchangeEvent(ExchangeEventType.ORDER_ADDED, new OkCoinTradeResult(true, 0, 100)));
+    String id = sut.placeLimitOrder(limitOrder);
+
+    sut.getMarketDataEventQueue().put(new OkCoinExchangeEvent(ExchangeEventType.ERROR,
+        new OkCoinOrdersResult(false, 10002, null)));
+    sut.getOrder(id).getId();
+
+  }
+
 }

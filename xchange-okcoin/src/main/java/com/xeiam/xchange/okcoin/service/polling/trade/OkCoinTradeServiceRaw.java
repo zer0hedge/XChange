@@ -5,7 +5,7 @@ import java.io.IOException;
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.okcoin.FuturesContract;
 import com.xeiam.xchange.okcoin.dto.trade.OkCoinFuturesOrderResult;
-import com.xeiam.xchange.okcoin.dto.trade.OkCoinOrderResult;
+import com.xeiam.xchange.okcoin.dto.trade.OkCoinOrdersResult;
 import com.xeiam.xchange.okcoin.dto.trade.OkCoinPositionResult;
 import com.xeiam.xchange.okcoin.dto.trade.OkCoinTradeResult;
 
@@ -33,15 +33,15 @@ public class OkCoinTradeServiceRaw extends OKCoinBaseTradePollingService {
     return returnOrThrow(tradeResult);
   }
 
-  public OkCoinOrderResult getOrder(long orderId, String symbol) throws IOException {
+  public OkCoinOrdersResult getOrder(long orderId, String symbol) throws IOException {
 
-    OkCoinOrderResult orderResult = okCoin.getOrder(apikey, orderId, symbol, signatureCreator);
+    OkCoinOrdersResult orderResult = okCoin.getOrder(apikey, orderId, symbol, signatureCreator);
     return returnOrThrow(orderResult);
   }
 
-  public OkCoinOrderResult getOrderHistory(String symbol, String status, String currentPage, String pageLength) throws IOException {
+  public OkCoinOrdersResult getOrderHistory(String symbol, String status, String currentPage, String pageLength) throws IOException {
 
-    OkCoinOrderResult orderResult = okCoin.getOrderHistory(apikey, symbol, status, currentPage, pageLength, signatureCreator);
+    OkCoinOrdersResult orderResult = okCoin.getOrderHistory(apikey, symbol, status, currentPage, pageLength, signatureCreator);
     return returnOrThrow(orderResult);
   }
 
