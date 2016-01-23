@@ -44,7 +44,7 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
     String sign = signatureCreator.digestNameValueParamMap(new ArrayList<>(params.entrySet()));
     params.put("sign", sign);
 
-    getSocketBase().addChannel(channelProvider.getPlaceLimitOrder(), params);
+    getSocketBase().addOneTimeChannel(channelProvider.getPlaceLimitOrder(), params);
     ;
     try {
       OkCoinTradeResult result = (OkCoinTradeResult) getNextEvent().getPayload();
@@ -69,7 +69,7 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
     String sign = signatureCreator.digestNameValueParamMap(new ArrayList<>(params.entrySet()));
     params.put("sign", sign);
 
-    getSocketBase().addChannel(channelProvider.getCancelOrder(), params);
+    getSocketBase().addOneTimeChannel(channelProvider.getCancelOrder(), params);
 
     try {
       OkCoinTradeResult result = (OkCoinTradeResult) getNextEvent().getPayload();
@@ -90,7 +90,7 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
     params.put("order_id", orderId);
     String sign = signatureCreator.digestNameValueParamMap(new ArrayList<>(params.entrySet()));
     params.put("sign", sign);
-    getSocketBase().addChannel(channelProvider.getOrderInfo(), params);
+    getSocketBase().addOneTimeChannel(channelProvider.getOrderInfo(), params);
 
     try {
       OkCoinOrdersResult result = (OkCoinOrdersResult) getNextEvent().getPayload();

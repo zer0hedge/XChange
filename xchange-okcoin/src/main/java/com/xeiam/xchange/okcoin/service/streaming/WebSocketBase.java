@@ -82,7 +82,7 @@ public class WebSocketBase {
     subscribedChannels.add(channel);
   }
 
-  public void addChannel(String channel, Map<String, String> params) {
+  public void addOneTimeChannel(String channel, Map<String, String> params) {
     if (channel == null) {
       return;
     }
@@ -93,7 +93,6 @@ public class WebSocketBase {
       String paramString = mapper.writeValueAsString(params).replace("\"", "'");
       String dataMsg = "{'event':'addChannel','channel':'" + channel + "','parameters':" + paramString + "}";
       sendMessage(dataMsg);
-      subscribedChannels.add(channel);
     } catch (JsonProcessingException e) {
       log.warn("Bad parameters passed" + e.getMessage());
     }

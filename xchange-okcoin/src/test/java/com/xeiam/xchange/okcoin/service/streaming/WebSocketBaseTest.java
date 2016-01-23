@@ -35,7 +35,7 @@ public class WebSocketBaseTest {
     params.put("sign", sign);
 
     WebSocketBase spy = Mockito.spy(sut);
-    spy.addChannel("ok_spotusd_trade", params);
+    spy.addOneTimeChannel("ok_spotusd_trade", params);
     verify(spy).sendMessage("{'event':'addChannel','channel':'ok_spotusd_trade'," + "'parameters':"
         + "{'api_key':'123456'," + "'price':'100500'," + "'sign':'F6DCE90FF040A5A8327AD70936D93EF9'" + "}}");
 
