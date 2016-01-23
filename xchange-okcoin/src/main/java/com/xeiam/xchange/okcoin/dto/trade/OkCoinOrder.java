@@ -3,9 +3,28 @@ package com.xeiam.xchange.okcoin.dto.trade;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class OkCoinOrder {
+
+  public OkCoinOrder(@JsonProperty("order_id") final long orderId, @JsonProperty("status") final int status,
+      @JsonProperty("symbol") final String symbol, @JsonProperty("type") final String type,
+      @JsonProperty("price") final BigDecimal price, @JsonProperty("avg_price") final BigDecimal averagePrice,
+      @JsonProperty("amount") final BigDecimal amount, @JsonProperty("deal_amount") final BigDecimal dealAmount,
+      @JsonProperty("create_date") final Date createDate) {
+
+    this.orderId = orderId;
+    this.status = status;
+    this.symbol = symbol;
+    this.type = type;
+    this.amount = amount;
+    this.dealAmount = dealAmount;
+    this.price = price;
+    this.averagePrice = averagePrice;
+    this.createDate = createDate;
+  }
 
   private final long orderId;
 
@@ -24,23 +43,6 @@ public class OkCoinOrder {
   private final BigDecimal price;
 
   private final BigDecimal averagePrice;
-
-  public OkCoinOrder(@JsonProperty("order_id") final long orderId, @JsonProperty("status") final int status,
-      @JsonProperty("symbol") final String symbol, @JsonProperty("type") final String type,
-      @JsonProperty("price") final BigDecimal price, @JsonProperty("avg_price") final BigDecimal averagePrice,
-      @JsonProperty("amount") final BigDecimal amount, @JsonProperty("deal_amount") final BigDecimal dealAmount,
-      @JsonProperty("create_date") final Date createDate) {
-
-    this.orderId = orderId;
-    this.status = status;
-    this.symbol = symbol;
-    this.type = type;
-    this.amount = amount;
-    this.dealAmount = dealAmount;
-    this.price = price;
-    this.averagePrice = averagePrice;
-    this.createDate = createDate;
-  }
 
   public long getOrderId() {
 
@@ -83,7 +85,7 @@ public class OkCoinOrder {
   }
 
   public BigDecimal getAveragePrice() {
-    
+
     return averagePrice;
   }
 }
