@@ -12,14 +12,14 @@ import com.xeiam.xchange.service.streaming.ExchangeEvent;
 import com.xeiam.xchange.service.streaming.ExchangeStreamingConfiguration;
 import com.xeiam.xchange.service.streaming.StreamingExchangeService;
 
-public class OkCoinBaseStreamingService implements StreamingExchangeService {
+class OkCoinBaseStreamingService implements StreamingExchangeService {
   private WebSocketBase socketBase;
   protected final ChannelProvider channelProvider;
   private final BlockingQueue<ExchangeEvent> marketDataEventQueue = new LinkedBlockingQueue<ExchangeEvent>();
 
   private final OkCoinStreamingConfiguration exchangeStreamingConfiguration;
 
-  public OkCoinBaseStreamingService(Exchange exchange, ExchangeStreamingConfiguration streamingConfiguration) {
+  OkCoinBaseStreamingService(Exchange exchange, ExchangeStreamingConfiguration streamingConfiguration) {
     
     this.exchangeStreamingConfiguration = (OkCoinStreamingConfiguration) streamingConfiguration;
 

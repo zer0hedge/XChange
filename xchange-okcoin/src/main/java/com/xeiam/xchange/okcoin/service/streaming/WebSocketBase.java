@@ -33,7 +33,7 @@ import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.ssl.SslContext;
 
-public class WebSocketBase {
+class WebSocketBase {
   private static final Logger log = LoggerFactory.getLogger(WebSocketBase.class);
 
   private WebSocketService service = null;
@@ -47,12 +47,12 @@ public class WebSocketBase {
   private boolean isAlive = false;
   Set<String> subscribedChannels = new HashSet<String>();
 
-  public WebSocketBase(String url, WebSocketService service) {
+  WebSocketBase(String url, WebSocketService service) {
     this.url = url;
     this.service = service;
   }
 
-  public void start() {
+  void start() {
     if (url == null) {
       log.info("WebSocketClient start error  url can not be null");
       return;
@@ -69,11 +69,11 @@ public class WebSocketBase {
     timerTask.schedule(monitor, 1000, 3000);
   }
 
-  public void setStatus(boolean flag) {
+  void setStatus(boolean flag) {
     this.isAlive = flag;
   }
 
-  public void addChannel(String channel) {
+  void addChannel(String channel) {
     if (channel == null) {
       return;
     }
@@ -82,7 +82,7 @@ public class WebSocketBase {
     subscribedChannels.add(channel);
   }
 
-  public void addOneTimeChannel(String channel, Map<String, String> params) {
+  void addOneTimeChannel(String channel, Map<String, String> params) {
     if (channel == null) {
       return;
     }
@@ -98,7 +98,7 @@ public class WebSocketBase {
     }
   }
 
-  public void removeChannel(String channel) {
+  void removeChannel(String channel) {
     if (channel == null) {
       return;
     }
@@ -107,7 +107,7 @@ public class WebSocketBase {
     subscribedChannels.remove(channel);
   }
 
-  private void connect() {
+  void connect() {
     try {
       final URI uri = new URI(url);
 
@@ -144,7 +144,7 @@ public class WebSocketBase {
     }
   }
 
-  public void sendMessage(String message) {
+  void sendMessage(String message) {
     if (!isAlive) {
       log.info("WebSocket is not Alive addChannel error");
     }
@@ -152,12 +152,12 @@ public class WebSocketBase {
     channel.writeAndFlush(new TextWebSocketFrame(message));
   }
 
-  public void sendPing() {
+  void sendPing() {
     String dataMsg = "{'event':'ping'}";
     this.sendMessage(dataMsg);
   }
 
-  public void reConnect() {
+  void reConnect() {
     try {
       log.debug("Reconnecting");
       this.group.shutdownGracefully();

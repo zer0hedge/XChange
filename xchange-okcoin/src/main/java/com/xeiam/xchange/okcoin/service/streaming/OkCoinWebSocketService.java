@@ -23,14 +23,14 @@ import com.xeiam.xchange.okcoin.dto.trade.OkCoinTradeResult;
 import com.xeiam.xchange.service.streaming.ExchangeEvent;
 import com.xeiam.xchange.service.streaming.ExchangeEventType;
 
-public class OkCoinWebSocketService implements WebSocketService {
+class OkCoinWebSocketService implements WebSocketService {
   private final ObjectMapper mapper = new ObjectMapper();
   private final JsonFactory jsonFactory = new JsonFactory();
   private final BlockingQueue<ExchangeEvent> eventQueue;
   private final CurrencyPair[] currencyPairs;
   private final ChannelProvider channelProvider;
 
-  public OkCoinWebSocketService(BlockingQueue<ExchangeEvent> eventQueue, ChannelProvider channelProvider,
+  OkCoinWebSocketService(BlockingQueue<ExchangeEvent> eventQueue, ChannelProvider channelProvider,
       CurrencyPair[] currencyPairs) {
     this.eventQueue = eventQueue;
     this.channelProvider = channelProvider;
@@ -57,7 +57,6 @@ public class OkCoinWebSocketService implements WebSocketService {
     }
   }
 
-  /** Parse depth, trades, and ticker for a given currency pair */
   private void parseExchangeEvent(JsonNode node, CurrencyPair currencyPair)
       throws JsonParseException, JsonMappingException, IOException {
 

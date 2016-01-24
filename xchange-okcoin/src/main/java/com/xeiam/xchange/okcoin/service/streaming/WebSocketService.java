@@ -5,8 +5,8 @@ import java.io.IOException;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
-public interface WebSocketService {
-  public void onReceive(String msg) throws JsonParseException, JsonMappingException, IOException;
+interface WebSocketService {
+  void onReceive(String msg) throws JsonParseException, JsonMappingException, IOException;
 
-  public void onDisconnect();
+  void onDisconnect();
 }

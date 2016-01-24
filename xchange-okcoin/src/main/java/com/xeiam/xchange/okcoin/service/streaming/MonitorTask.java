@@ -8,11 +8,11 @@ class MonitorTask extends TimerTask {
   private final int checkTime = 5000;
   private WebSocketBase client = null;
 
-  public void updateTime() {
+  void updateTime() {
     startTime = System.currentTimeMillis();
   }
 
-  public MonitorTask(WebSocketBase client) {
+  MonitorTask(WebSocketBase client) {
     this.client = client;
   }
 

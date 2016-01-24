@@ -5,7 +5,7 @@ import com.xeiam.xchange.currency.CurrencyPair;
 
 class SpotChannelProvider implements ChannelProvider {
 
-  public SpotChannelProvider(ExchangeSpecification exchangeSpecification) {
+  SpotChannelProvider(ExchangeSpecification exchangeSpecification) {
     this.exchangeSpecification = exchangeSpecification;
   }
 

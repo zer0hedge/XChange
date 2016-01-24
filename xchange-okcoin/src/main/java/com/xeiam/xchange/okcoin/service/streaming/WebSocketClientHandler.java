@@ -16,7 +16,7 @@ import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.util.CharsetUtil;
 
-public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> {
+class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> {
   private final Logger log = LoggerFactory.getLogger(WebSocketClientHandler.class);
 
   private final WebSocketClientHandshaker handshaker;
@@ -24,13 +24,13 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
   private MonitorTask moniter;
   private WebSocketService service;
 
-  public WebSocketClientHandler(WebSocketClientHandshaker handshaker, WebSocketService service, MonitorTask monitor) {
+  WebSocketClientHandler(WebSocketClientHandshaker handshaker, WebSocketService service, MonitorTask monitor) {
     this.handshaker = handshaker;
     this.service = service;
     this.moniter = monitor;
   }
 
-  public ChannelFuture handshakeFuture() {
+  ChannelFuture handshakeFuture() {
     return handshakeFuture;
   }
 
@@ -64,8 +64,8 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 
     if (msg instanceof FullHttpResponse) {
       FullHttpResponse response = (FullHttpResponse) msg;
-      throw new IllegalStateException(
-          "Unexpected FullHttpResponse (getStatus=" + response.getStatus() + ", content=" + response.content().toString(CharsetUtil.UTF_8) + ')');
+      throw new IllegalStateException("Unexpected FullHttpResponse (getStatus=" + response.getStatus() + ", content="
+          + response.content().toString(CharsetUtil.UTF_8) + ')');
     }
 
     WebSocketFrame frame = (WebSocketFrame) msg;
