@@ -67,15 +67,15 @@ public class OkCoinBaseStreamingService implements StreamingExchangeService {
     return READYSTATE.OPEN;
   }
 
-  protected WebSocketBase getSocketBase() {
+  WebSocketBase getSocketBase() {
     return socketBase;
   }
 
-  protected void setSocketBase(WebSocketBase socketBase) {
+  void setSocketBase(WebSocketBase socketBase) {
     this.socketBase = socketBase;
   }
 
-  public BlockingQueue<ExchangeEvent> getMarketDataEventQueue() {
+  BlockingQueue<ExchangeEvent> getMarketDataEventQueue() {
     return marketDataEventQueue;
   }
 }
