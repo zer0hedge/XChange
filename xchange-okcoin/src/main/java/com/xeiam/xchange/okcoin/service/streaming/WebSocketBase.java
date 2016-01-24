@@ -177,12 +177,4 @@ public class WebSocketBase {
       e.printStackTrace();
     }
   }
-
-  public boolean isAlive() {
-    return isAlive;
-  }
-
-  public void setAlive(boolean isAlive) {
-    this.isAlive = isAlive;
-  }
 }

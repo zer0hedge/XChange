@@ -24,7 +24,7 @@ public class WebSocketBaseTest {
     WebSocketBase sut = new WebSocketBase("", null);
     sut.channel = mock(Channel.class);
     when(sut.channel.writeAndFlush(anyObject())).thenReturn(null);
-    sut.setAlive(true);
+    sut.setStatus(true);
     
     OkCoinDigest signatureCreator = new OkCoinDigest("123456", "lol");
 
