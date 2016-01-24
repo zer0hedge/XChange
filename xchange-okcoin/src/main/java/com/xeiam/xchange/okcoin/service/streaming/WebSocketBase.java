@@ -44,7 +44,7 @@ public class WebSocketBase {
   Channel channel = null;
   private String url = null;
   private ChannelFuture future = null;
-  boolean isAlive = false;
+  private boolean isAlive = false;
   Set<String> subscribedChannels = new HashSet<String>();
 
   public WebSocketBase(String url, WebSocketService service) {
@@ -176,5 +176,13 @@ public class WebSocketBase {
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  public boolean isAlive() {
+    return isAlive;
+  }
+
+  public void setAlive(boolean isAlive) {
+    this.isAlive = isAlive;
   }
 }
