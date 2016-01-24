@@ -32,7 +32,7 @@ public class OkCoinMarketDataService extends OkCoinMarketDataServiceRaw implemen
   public OrderBook getOrderBook(CurrencyPair currencyPair, Object... args) throws IOException {
     if (args.length != 0)
       return OkCoinAdapters.adaptOrderBook(getDepth(currencyPair, (Integer) args[0]), currencyPair);
-    else
+    else // for the size not specified return maximal depth allowed by OkCoin
       return OkCoinAdapters.adaptOrderBook(getDepth(currencyPair, 200), currencyPair);
 
   }
