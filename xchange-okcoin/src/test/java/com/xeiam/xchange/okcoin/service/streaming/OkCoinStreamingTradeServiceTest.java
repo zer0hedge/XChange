@@ -1,4 +1,4 @@
-package com.xeiam.xchange.okcoin.service.streaming.trade;
+package com.xeiam.xchange.okcoin.service.streaming;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

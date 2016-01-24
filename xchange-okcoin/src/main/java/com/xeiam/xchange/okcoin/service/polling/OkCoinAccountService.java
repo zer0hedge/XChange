@@ -1,4 +1,4 @@
-package com.xeiam.xchange.okcoin.service.polling.account;
+package com.xeiam.xchange.okcoin.service.polling;
 
 import java.io.IOException;
 import java.math.BigDecimal;

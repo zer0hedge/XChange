@@ -67,11 +67,11 @@ public class OkCoinBaseStreamingService implements StreamingExchangeService {
     return READYSTATE.OPEN;
   }
 
-  public WebSocketBase getSocketBase() {
+  protected WebSocketBase getSocketBase() {
     return socketBase;
   }
 
-  public void setSocketBase(WebSocketBase socketBase) {
+  protected void setSocketBase(WebSocketBase socketBase) {
     this.socketBase = socketBase;
   }
 

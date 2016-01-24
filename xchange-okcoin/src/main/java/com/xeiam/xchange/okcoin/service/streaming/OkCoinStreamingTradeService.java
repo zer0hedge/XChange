@@ -1,4 +1,4 @@
-package com.xeiam.xchange.okcoin.service.streaming.trade;
+package com.xeiam.xchange.okcoin.service.streaming;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,7 +16,6 @@ import com.xeiam.xchange.okcoin.OkCoinDigest;
 import com.xeiam.xchange.okcoin.OkCoinStreamingUtils;
 import com.xeiam.xchange.okcoin.dto.trade.OkCoinOrdersResult;
 import com.xeiam.xchange.okcoin.dto.trade.OkCoinTradeResult;
-import com.xeiam.xchange.okcoin.service.streaming.OkCoinBaseStreamingService;
 import com.xeiam.xchange.service.streaming.ExchangeStreamingConfiguration;
 import com.xeiam.xchange.service.streaming.trade.StreamingTradeService;
 

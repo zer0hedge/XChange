@@ -1,4 +1,4 @@
-package com.xeiam.xchange.okcoin.service.streaming.marketdata;
+package com.xeiam.xchange.okcoin.service.streaming;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 

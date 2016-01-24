@@ -1,4 +1,4 @@
-package com.xeiam.xchange.okcoin.service.polling.trade;
+package com.xeiam.xchange.okcoin.service.polling;
 
 import java.io.IOException;
 

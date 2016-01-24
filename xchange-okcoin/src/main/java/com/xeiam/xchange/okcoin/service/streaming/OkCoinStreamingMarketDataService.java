@@ -1,8 +1,7 @@
-package com.xeiam.xchange.okcoin.service.streaming.marketdata;
+package com.xeiam.xchange.okcoin.service.streaming;
 
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.currency.CurrencyPair;
-import com.xeiam.xchange.okcoin.service.streaming.OkCoinBaseStreamingService;
 import com.xeiam.xchange.service.streaming.ExchangeStreamingConfiguration;
 import com.xeiam.xchange.service.streaming.marketdata.StreamingMarketDataService;
 

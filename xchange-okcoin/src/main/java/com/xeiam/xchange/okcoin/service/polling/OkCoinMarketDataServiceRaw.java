@@ -1,4 +1,4 @@
-package com.xeiam.xchange.okcoin.service.polling.marketdata;
+package com.xeiam.xchange.okcoin.service.polling;
 
 import java.io.IOException;
 
@@ -10,7 +10,6 @@ import com.xeiam.xchange.okcoin.OkCoinAdapters;
 import com.xeiam.xchange.okcoin.dto.marketdata.OkCoinDepth;
 import com.xeiam.xchange.okcoin.dto.marketdata.OkCoinTickerResponse;
 import com.xeiam.xchange.okcoin.dto.marketdata.OkCoinTrade;
-import com.xeiam.xchange.okcoin.service.polling.OkCoinBasePollingService;
 
 import si.mazi.rescu.RestProxyFactory;
 
