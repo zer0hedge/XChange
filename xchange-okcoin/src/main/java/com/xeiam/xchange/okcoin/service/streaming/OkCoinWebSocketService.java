@@ -148,6 +148,7 @@ class OkCoinWebSocketService implements WebSocketService {
 
   @Override
   public void onDisconnect() {
-//    putEvent(ExchangeEventType.DISCONNECT, new Object());
+    
+    putEvent(ExchangeEventType.DISCONNECT, new Object());
   }
 }

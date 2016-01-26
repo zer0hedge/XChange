@@ -44,7 +44,8 @@ class WebSocketBase {
   Channel channel = null;
   private String url = null;
   private ChannelFuture future = null;
-  private boolean isAlive = false;
+  private volatile boolean isAlive = false;
+
   Set<String> subscribedChannels = new HashSet<String>();
 
   WebSocketBase(String url, WebSocketService service) {
@@ -145,11 +146,19 @@ class WebSocketBase {
   }
 
   void sendMessage(String message) {
-    if (!isAlive) {
-      log.info("WebSocket is not Alive addChannel error");
+    try {
+      while (!isAlive) {
+        Thread.sleep(100);
+      }
+      log.debug("Sending message: " + message);
+      ChannelFuture future = channel.writeAndFlush(new TextWebSocketFrame(message));
+      future.await();
+      if (!future.isSuccess())
+        log.warn("Failed to send message");
+      
+    } catch (InterruptedException e) {
+
     }
-    log.debug("Sending message: "+message);
-    channel.writeAndFlush(new TextWebSocketFrame(message));
   }
 
   void sendPing() {
@@ -161,11 +170,9 @@ class WebSocketBase {
     try {
       log.debug("Reconnecting");
       this.group.shutdownGracefully();
-      this.group = null;
       this.connect();
 
       if (future.isSuccess()) {
-        this.setStatus(true);
         this.sendPing();
         Iterator<String> it = subscribedChannels.iterator();
         while (it.hasNext()) {

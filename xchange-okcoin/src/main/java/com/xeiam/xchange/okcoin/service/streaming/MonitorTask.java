@@ -5,7 +5,7 @@ import java.util.concurrent.RejectedExecutionException;
 
 class MonitorTask extends TimerTask {
   private long startTime = System.currentTimeMillis();
-  private final int checkTime = 5000;
+  private final int checkTime = 1000;
   private WebSocketBase client = null;
 
   void updateTime() {

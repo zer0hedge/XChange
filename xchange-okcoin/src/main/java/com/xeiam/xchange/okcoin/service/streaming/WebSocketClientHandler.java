@@ -21,13 +21,13 @@ class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> {
 
   private final WebSocketClientHandshaker handshaker;
   private ChannelPromise handshakeFuture;
-  private MonitorTask moniter;
+  private MonitorTask monitor;
   private WebSocketService service;
 
   WebSocketClientHandler(WebSocketClientHandshaker handshaker, WebSocketService service, MonitorTask monitor) {
     this.handshaker = handshaker;
     this.service = service;
-    this.moniter = monitor;
+    this.monitor = monitor;
   }
 
   ChannelFuture handshakeFuture() {
@@ -54,7 +54,7 @@ class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> {
   @Override
   public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
     Channel ch = ctx.channel();
-    moniter.updateTime();
+    monitor.updateTime();
     if (!handshaker.isHandshakeComplete()) {
       handshaker.finishHandshake(ch, (FullHttpResponse) msg);
       log.info("WebSocket Client connected!");

@@ -139,7 +139,7 @@ public class OkCoinStreamingTradeServiceTest {
   }
 
   @Test(expected=ExchangeException.class)
-  public void testGetOrderFail() throws NotAvailableFromExchangeException, NotYetImplementedForExchangeException,
+  public void testGetOrderFailure() throws NotAvailableFromExchangeException, NotYetImplementedForExchangeException,
       ExchangeException, IOException, InterruptedException {
 
     LimitOrder limitOrder = mock(LimitOrder.class);

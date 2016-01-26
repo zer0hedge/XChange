@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.xeiam.xchange.Exchange;
 import com.xeiam.xchange.dto.Order.OrderType;
 import com.xeiam.xchange.dto.trade.LimitOrder;
@@ -16,6 +19,8 @@ import com.xeiam.xchange.okcoin.OkCoinDigest;
 import com.xeiam.xchange.okcoin.OkCoinStreamingUtils;
 import com.xeiam.xchange.okcoin.dto.trade.OkCoinOrdersResult;
 import com.xeiam.xchange.okcoin.dto.trade.OkCoinTradeResult;
+import com.xeiam.xchange.service.streaming.ExchangeEvent;
+import com.xeiam.xchange.service.streaming.ExchangeEventType;
 import com.xeiam.xchange.service.streaming.ExchangeStreamingConfiguration;
 import com.xeiam.xchange.service.streaming.trade.StreamingTradeService;
 
@@ -43,17 +48,25 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
     String sign = signatureCreator.digestNameValueParamMap(new ArrayList<>(params.entrySet()));
     params.put("sign", sign);
 
-    getSocketBase().addOneTimeChannel(channelProvider.getPlaceLimitOrder(), params);
-    ;
-    try {
-      OkCoinTradeResult result = (OkCoinTradeResult) getNextEvent().getPayload();
-      if (result.isResult()) {
-        knownOrders.put(String.valueOf(result.getOrderId()), limitOrder);
-        return String.valueOf(result.getOrderId());
-      } else
-        throw new ExchangeException(OkCoinStreamingUtils.getErrorMessage(result.getErrorCode()));
-    } catch (InterruptedException e) {
-      return null;
+    while (true) {
+      getSocketBase().addOneTimeChannel(channelProvider.getPlaceLimitOrder(), params);
+
+      try {
+        ExchangeEvent event = getNextEvent();
+        if (event.getEventType() != ExchangeEventType.DISCONNECT) {
+          OkCoinTradeResult result = (OkCoinTradeResult) event.getPayload();
+          if (result.isResult()) {
+            knownOrders.put(String.valueOf(result.getOrderId()), limitOrder);
+            return String.valueOf(result.getOrderId());
+          } else
+            throw new ExchangeException(OkCoinStreamingUtils.getErrorMessage(result.getErrorCode()));
+        } else {
+          log.warn("IO error, retrying");
+          continue;
+        }
+      } catch (InterruptedException e) {
+        return null;
+      }
     }
   }
 
@@ -68,14 +81,22 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
     String sign = signatureCreator.digestNameValueParamMap(new ArrayList<>(params.entrySet()));
     params.put("sign", sign);
 
-    getSocketBase().addOneTimeChannel(channelProvider.getCancelOrder(), params);
-
-    try {
-      OkCoinTradeResult result = (OkCoinTradeResult) getNextEvent().getPayload();
-      if (!result.isResult())
-        throw new ExchangeException(OkCoinStreamingUtils.getErrorMessage(result.getErrorCode()));
-    } catch (InterruptedException e) {
-      return;
+    while (true) {
+      getSocketBase().addOneTimeChannel(channelProvider.getCancelOrder(), params);
+      try {
+        ExchangeEvent event = getNextEvent();
+        if (event.getEventType() != ExchangeEventType.DISCONNECT) {
+          OkCoinTradeResult result = (OkCoinTradeResult) event.getPayload();
+          if (!result.isResult())
+            throw new ExchangeException(OkCoinStreamingUtils.getErrorMessage(result.getErrorCode()));
+          return;
+        } else {
+          log.warn("IO error, retrying");
+          continue;
+        }
+      } catch (InterruptedException e) {
+        return;
+      }
     }
   }
 
@@ -89,18 +110,27 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
     params.put("order_id", orderId);
     String sign = signatureCreator.digestNameValueParamMap(new ArrayList<>(params.entrySet()));
     params.put("sign", sign);
-    getSocketBase().addOneTimeChannel(channelProvider.getOrderInfo(), params);
 
-    try {
-      OkCoinOrdersResult result = (OkCoinOrdersResult) getNextEvent().getPayload();
-      if (result.isResult())
-        return OkCoinAdapters.adaptOrder(result.getOrders()[0]);
-        throw new ExchangeException(OkCoinStreamingUtils.getErrorMessage(result.getErrorCode()));
-    } catch (InterruptedException e) {
-      return null;
+    while (true) {
+      getSocketBase().addOneTimeChannel(channelProvider.getOrderInfo(), params);
+      try {
+        ExchangeEvent event = getNextEvent();
+        if (event.getEventType() != ExchangeEventType.DISCONNECT) {
+          OkCoinOrdersResult result = (OkCoinOrdersResult) event.getPayload();
+          if (result.isResult())
+            return OkCoinAdapters.adaptOrder(result.getOrders()[0]);
+          throw new ExchangeException(OkCoinStreamingUtils.getErrorMessage(result.getErrorCode()));
+        } else {
+          log.warn("IO error, retrying");
+          continue;
+        }
+      } catch (InterruptedException e) {
+        return null;
+      }
     }
   }
 
   private Map<String, LimitOrder> knownOrders = new HashMap<>();
-
+  private Logger log = LoggerFactory.getLogger(this.getClass());
+  
 }
