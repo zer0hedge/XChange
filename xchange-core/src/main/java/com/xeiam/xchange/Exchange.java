@@ -92,7 +92,9 @@ public interface Exchange {
    * @param configuration
    *          The exchange-specific configuration to be applied after creation
    * @return The exchange's "push" market data service
+   * @deprecated Use either {@link #getStreamingMarketDataService(ExchangeStreamingConfiguration)} or {@link #getStreamingTradeService(ExchangeStreamingConfiguration)}} 
    */
+  @Deprecated
   StreamingExchangeService getStreamingExchangeService(ExchangeStreamingConfiguration configuration);
 
   /**

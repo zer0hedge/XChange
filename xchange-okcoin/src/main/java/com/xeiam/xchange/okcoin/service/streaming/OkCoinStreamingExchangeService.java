@@ -13,6 +13,11 @@ import com.xeiam.xchange.service.streaming.ExchangeStreamingConfiguration;
 import com.xeiam.xchange.service.streaming.StreamingExchangeService;
 
 
+/**
+ * @deprecated Please use either {@link com.xeiam.xchange.okcoin.service.streaming.OkCoinStreamingMarketDataService} or 
+ * {@link com.xeiam.xchange.okcoin.service.streaming.OkCoinStreamingMarketDataService} instead
+ *
+ */
 @Deprecated
 public class OkCoinStreamingExchangeService implements StreamingExchangeService {
   private final WebSocketBase socketBase;
