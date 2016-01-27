@@ -179,6 +179,7 @@ public abstract class BaseExchange implements Exchange {
   }
 
   @Override
+  @Deprecated
   public StreamingExchangeService getStreamingExchangeService(ExchangeStreamingConfiguration configuration) {
 
     return streamingExchangeService;

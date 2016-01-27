@@ -71,7 +71,6 @@ public interface StreamingTradeService extends StreamingExchangeService {
    * from the exchange
    *
    * @param orderId
-   * @return the order
    * @throws ExchangeException
    *           - Indication that the exchange reported some kind of error with
    *           the request or response
