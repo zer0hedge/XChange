@@ -71,7 +71,7 @@ public class OkCoinWebSocketServiceTest {
   @Test
   public void receiveOrderCancellationResponseFailTest()
       throws InterruptedException, JsonParseException, JsonMappingException, IOException {
-    String responseMsg = "[{\"channel\":\"ok_spotusd_cancel_order\",\"errorcode\":\"10009\",\"success\":\"false\"}]";
+    String responseMsg = "[{\"channel\":\"ok_spotusd_cancel_order\",\"errorcode\":\"10009\",\"order_id\":\"100\", \"success\":\"false\"}]";
 
     when(channelProvider.getCancelOrder()).thenReturn("ok_spotusd_cancel_order");
 

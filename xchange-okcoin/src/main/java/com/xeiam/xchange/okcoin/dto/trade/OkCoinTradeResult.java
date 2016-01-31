@@ -4,7 +4,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class OkCoinTradeResult extends OkCoinErrorResult {
 
-  private final long orderId;
+  @Override
+	public String toString() {
+		return "OkCoinTradeResult [orderId=" + orderId + ", "
+				+ (super.toString() != null ? "toString()=" + super.toString() : "") + "]";
+	}
+
+private final long orderId;
 
   public OkCoinTradeResult(@JsonProperty("result") final boolean result, @JsonProperty("error_code") final int errorCode,
       @JsonProperty("order_id") final long orderId) {
