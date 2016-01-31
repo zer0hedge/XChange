@@ -46,7 +46,7 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
 	}
 
 	@Override
-	public synchronized String placeLimitOrder(LimitOrder limitOrder) {
+	public String placeLimitOrder(LimitOrder limitOrder) {
 
 		Future<String> res = placeLimitOrderNonBlocking(limitOrder);
 		try {
@@ -73,7 +73,7 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
 	}
 
 	@Override
-	public synchronized void cancelOrder(String orderId) throws ExchangeException, NotAvailableFromExchangeException,
+	public void cancelOrder(String orderId) throws ExchangeException, NotAvailableFromExchangeException,
 			NotYetImplementedForExchangeException, IOException {
 
 		Future<Boolean> res = cancelOrderNonBlocking(orderId, knownOrders.get(orderId).getCurrencyPair());
@@ -101,7 +101,7 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
 	}
 
 	@Override
-	public synchronized LimitOrder getOrder(String orderId) throws ExchangeException, NotAvailableFromExchangeException,
+	public LimitOrder getOrder(String orderId) throws ExchangeException, NotAvailableFromExchangeException,
 			NotYetImplementedForExchangeException, IOException {
 
 		Future<LimitOrder> res = getOrderNonBlocking(orderId, knownOrders.get(orderId).getCurrencyPair());
