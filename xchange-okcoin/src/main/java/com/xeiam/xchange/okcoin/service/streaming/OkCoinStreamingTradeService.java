@@ -214,7 +214,7 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
 							if (req != null)
 								req.set(true);
 							else
-								log.error("Unexpected event: {}", event);
+								log.error("Unexpected {} event: {}", event.getEventType(), event);
 							requests.remove(((OkCoinTradeResult) payload).getOrderId());
 							break;
 						case USER_ORDER:
@@ -223,7 +223,7 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
 							if (req != null)
 								req.set(order);
 							else
-								log.error("Unexpected event: {}", event);
+								log.error("Unexpected {} event: {}",event.getEventType(), event);
 							requests.remove(Long.valueOf(order.getId()));
 							break;
 						case ERROR:
@@ -236,7 +236,7 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
 								if (req != null)
 									req.set(false);
 								else
-									log.error("Unexpected event: {}", event);
+									log.error("Unexpected {} event: {}", event.getEventType(), event);
 								requests.remove(((OkCoinCancelOrderError) payload).getOrderId());
 
 							}
@@ -247,7 +247,7 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
 								if (req != null)
 									req.set(null);
 								else
-									log.error("Unexpected event: {}", event);
+									log.error("Unexpected {} event: {}", event.getEventType(), event);
 								requests.remove(((OkCoinGetOrderInfoError) payload).getOrderId());
 							} else
 								log.error("Unprocessed error: {}", event.toString());
@@ -255,7 +255,7 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
 						case DISCONNECT:
 							break;
 						default:
-							log.debug("Unprocessed event: {}", event.toString());
+							log.debug("Unprocessed {} event: {}", event.getEventType(), event);
 							break;
 						}
 					} catch (InterruptedException e) {
