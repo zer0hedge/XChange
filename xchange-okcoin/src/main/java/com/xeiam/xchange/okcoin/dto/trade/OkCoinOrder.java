@@ -9,7 +9,53 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OkCoinOrder {
 
-  public OkCoinOrder(@JsonProperty("order_id") final long orderId, @JsonProperty("status") final int status,
+  @Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("OkCoinOrder [orderId=");
+		builder.append(orderId);
+		builder.append(", status=");
+		builder.append(status);
+		builder.append(", ");
+		if (symbol != null) {
+			builder.append("symbol=");
+			builder.append(symbol);
+			builder.append(", ");
+		}
+		if (type != null) {
+			builder.append("type=");
+			builder.append(type);
+			builder.append(", ");
+		}
+		if (amount != null) {
+			builder.append("amount=");
+			builder.append(amount);
+			builder.append(", ");
+		}
+		if (dealAmount != null) {
+			builder.append("dealAmount=");
+			builder.append(dealAmount);
+			builder.append(", ");
+		}
+		if (createDate != null) {
+			builder.append("createDate=");
+			builder.append(createDate);
+			builder.append(", ");
+		}
+		if (price != null) {
+			builder.append("price=");
+			builder.append(price);
+			builder.append(", ");
+		}
+		if (averagePrice != null) {
+			builder.append("averagePrice=");
+			builder.append(averagePrice);
+		}
+		builder.append("]");
+		return builder.toString();
+	}
+
+public OkCoinOrder(@JsonProperty("order_id") final long orderId, @JsonProperty("status") final int status,
       @JsonProperty("symbol") final String symbol, @JsonProperty("type") final String type,
       @JsonProperty("price") final BigDecimal price, @JsonProperty("avg_price") final BigDecimal averagePrice,
       @JsonProperty("amount") final BigDecimal amount, @JsonProperty("deal_amount") final BigDecimal dealAmount,

@@ -127,6 +127,7 @@ public class OkCoinStreamingTradeServiceTest {
     
 
   }
+  
 
   @Test
   public void testGetOrder() throws NotAvailableFromExchangeException, NotYetImplementedForExchangeException,
