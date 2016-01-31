@@ -28,4 +28,11 @@ class OkCoinExchangeEvent implements ExchangeEvent {
   public ExchangeEventType getEventType() {
     return exchangeEventType;
   }
+
+@Override
+public String toString() {
+	return "OkCoinExchangeEvent [" + (rawData != null ? "rawData=" + rawData + ", " : "")
+			+ (payload != null ? "payload=" + payload + ", " : "")
+			+ (exchangeEventType != null ? "exchangeEventType=" + exchangeEventType : "") + "]";
+}
 }

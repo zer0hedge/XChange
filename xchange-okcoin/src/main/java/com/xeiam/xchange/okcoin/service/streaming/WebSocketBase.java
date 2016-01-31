@@ -144,6 +144,10 @@ class WebSocketBase {
       this.setStatus(false);
     }
   }
+  
+  void shutdown() {
+	  group.shutdownGracefully();
+  }
 
   void sendMessage(String message) {
     try {

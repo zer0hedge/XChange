@@ -43,6 +43,7 @@ class OkCoinBaseStreamingService implements StreamingExchangeService {
 
   @Override
   public void disconnect() {
+	  socketBase.shutdown();
   }
 
   @Override

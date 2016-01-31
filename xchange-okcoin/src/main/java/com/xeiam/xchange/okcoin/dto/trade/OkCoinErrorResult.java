@@ -4,7 +4,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class OkCoinErrorResult {
 
-  private final boolean result;
+  @Override
+	public String toString() {
+		return "OkCoinErrorResult [result=" + result + ", errorCode=" + errorCode + "]";
+	}
+
+private final boolean result;
   private final int errorCode;
 
   public OkCoinErrorResult(@JsonProperty("result") final boolean result, @JsonProperty("error_code") final int errorCode) {
