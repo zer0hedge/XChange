@@ -36,7 +36,7 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
 	private OkCoinDigest signatureCreator;
 	private final BlockingQueue<OkCoinWebSocketAPIRequest> newRequestsQueue = new LinkedBlockingQueue<OkCoinWebSocketAPIRequest>();
 	private final BlockingQueue<OkCoinPlaceLimitOrderRequest> ordersToExchange = new LinkedBlockingQueue<OkCoinPlaceLimitOrderRequest>();
-	private final BlockingQueue<String> orderNumsFromExchange = new LinkedBlockingQueue<String>();
+	private final BlockingQueue<String> orderIdsFromExchange = new LinkedBlockingQueue<String>();
 
 	public OkCoinStreamingTradeService(Exchange exchange,
 			ExchangeStreamingConfiguration exchangeStreamingConfiguration) {
@@ -178,10 +178,10 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
 					try {
 						OkCoinPlaceLimitOrderRequest orderToSend = ordersToExchange.take();
 						getSocketBase().addOneTimeChannel(orderToSend.getChannel(), orderToSend.getParams());
-						String orderNumber = orderNumsFromExchange.take();
-						if (!orderNumber.equals("-1"))
-							knownOrders.put(orderNumber, orderToSend.getOrder());
-						orderToSend.set(orderNumber);
+						String orderId = orderIdsFromExchange.take();
+						if (!orderId.equals("-1"))
+							knownOrders.put(orderId, orderToSend.getOrder());
+						orderToSend.set(orderId);
 					} catch (InterruptedException e) {
 						Thread.currentThread().interrupt();
 						break;
@@ -206,7 +206,7 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
 						switch (event.getEventType()) {
 						case ORDER_ADDED:
 							log.debug("Processed addition of new order {}", ((OkCoinTradeResult) payload).getOrderId());
-							orderNumsFromExchange.put(Long.toString(((OkCoinTradeResult) payload).getOrderId()));
+							orderIdsFromExchange.put(Long.toString(((OkCoinTradeResult) payload).getOrderId()));
 							break;
 						case ORDER_CANCELED:
 							log.debug("Processed cancellation for {}", ((OkCoinTradeResult) payload).getOrderId());
@@ -228,7 +228,7 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
 							break;
 						case ERROR:
 							if (payload instanceof OkCoinPlaceOrderError) {
-								orderNumsFromExchange.put("-1");
+								orderIdsFromExchange.put("-1");
 							} else if (payload instanceof OkCoinCancelOrderError) {
 								log.debug("Processed error for {}", ((OkCoinCancelOrderError) payload).getOrderId());
 								long orderId = ((OkCoinCancelOrderError) payload).getOrderId();
