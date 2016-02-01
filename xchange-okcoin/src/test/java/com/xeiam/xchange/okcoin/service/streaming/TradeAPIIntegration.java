@@ -42,7 +42,7 @@ import com.xeiam.xchange.okcoin.OkCoinExchange;
  * 	    4. Remove @Ignore below and then run the tests in your IDE or by Maven 
  *
  */
-@Ignore
+//@Ignore
 public class TradeAPIIntegration {
 
 	// Change it!
@@ -108,14 +108,14 @@ public class TradeAPIIntegration {
 		// If the test fails, you have to CANCEL ORDER MANUALLY !
 		
 		LimitOrder limitOrder = new LimitOrder(OrderType.ASK, new BigDecimal("0.01"), currencyPair, "1", null, limitPrice);
-		Future<String> orderId = sut.placeLimitOrderNonBlocking(limitOrder);
-		assertThat(orderId.get()).isNotEqualTo("-1");
+		String orderId = sut.placeLimitOrder(limitOrder);
+		assertThat(orderId).isNotEqualTo("-1");
 		
-		Future<LimitOrder> orderInfo = sut.getOrderNonBlocking(orderId.get(), currencyPair);
+		Future<LimitOrder> orderInfo = sut.getOrderNonBlocking(orderId, currencyPair);
 		LimitOrder o = orderInfo.get();
-		assertThat(o.getId()).isEqualTo(orderId.get());
+		assertThat(o.getId()).isEqualTo(orderId);
 
-		Future<Boolean> isCancelled = sut.cancelOrderNonBlocking(orderId.get(), currencyPair);
+		Future<Boolean> isCancelled = sut.cancelOrderNonBlocking(orderId, currencyPair);
 		assertThat(isCancelled.get()).isTrue();
 		
 	}
@@ -126,5 +126,28 @@ public class TradeAPIIntegration {
 		Future<Boolean> result = sut.cancelOrderNonBlocking("1", currencyPair);
 		result.get();
 	}
+	
+	@Ignore
+	@Test
+	public void shouldHandleSeveralGetInfoForTheSameOrder() throws NotAvailableFromExchangeException, NotYetImplementedForExchangeException, ExchangeException, IOException, InterruptedException, ExecutionException, TimeoutException {
+		// Set limit price below appropriately, so order will NOT get executed until it is cancelled by the test !
+		// If the test fails, you have to CANCEL ORDER MANUALLY !
+		
+		LimitOrder limitOrder = new LimitOrder(OrderType.ASK, new BigDecimal("0.01"), currencyPair, "1", null, limitPrice);
+		String orderId = sut.placeLimitOrder(limitOrder);
+		assertThat(orderId).isNotEqualTo("-1");
+		
+		Future<LimitOrder> orderInfo = sut.getOrderNonBlocking(orderId, currencyPair);
+		Future<LimitOrder> orderInfo2 = sut.getOrderNonBlocking(orderId, currencyPair);
+		assertThat(orderInfo.get().getId()).isEqualTo(orderId);
+		assertThat(orderInfo2.get().getId()).isEqualTo(orderId);
+		
+
+		Future<Boolean> isCancelled = sut.cancelOrderNonBlocking(orderId, currencyPair);
+		assertThat(isCancelled.get()).isTrue();
+		
+	}
+
+	
 
 }
