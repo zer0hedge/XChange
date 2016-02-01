@@ -43,7 +43,7 @@ public class OkCoinCancelOrderRequest extends OkCoinWebSocketAPIRequest implemen
 
 	Boolean checkResult(Boolean result) {
 		if(!result)
-			throw new ExchangeException("Unable to perform request");
+			throw new ExchangeException("Could not cancel order");
 		return result;
 	}
 

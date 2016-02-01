@@ -26,7 +26,6 @@ import com.xeiam.xchange.okcoin.dto.trade.OkCoinGetOrderInfoError;
 import com.xeiam.xchange.okcoin.dto.trade.OkCoinOrdersResult;
 import com.xeiam.xchange.okcoin.dto.trade.OkCoinPlaceOrderError;
 import com.xeiam.xchange.okcoin.dto.trade.OkCoinTradeResult;
-import com.xeiam.xchange.okcoin.service.polling.OkCoinTradeService;
 import com.xeiam.xchange.service.streaming.ExchangeEvent;
 import com.xeiam.xchange.service.streaming.ExchangeEventType;
 
@@ -48,6 +47,7 @@ class OkCoinWebSocketService implements WebSocketService {
 
 	@Override
 	public void onReceive(String msg) throws JsonParseException, JsonMappingException, IOException {
+	  log.debug("Received message: "+msg);
 		JsonParser parser = jsonFactory.createParser(msg);
 		if (parser.nextToken() == JsonToken.START_ARRAY) {
 			ArrayNode readTree = (ArrayNode) mapper.readTree(msg);

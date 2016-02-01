@@ -67,7 +67,7 @@ class WebSocketBase {
     this.connect();
 
     timerTask = new Timer();
-    timerTask.schedule(monitor, 1000, 3000);
+    timerTask.schedule(monitor, 1000, 1000);
   }
 
   void setStatus(boolean flag) {
