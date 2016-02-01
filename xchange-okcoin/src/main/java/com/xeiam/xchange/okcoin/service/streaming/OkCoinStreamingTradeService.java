@@ -35,8 +35,6 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
   private String apikey;
   private OkCoinDigest signatureCreator;
   private final BlockingQueue<OkCoinWebSocketAPIRequest> newRequestsQueue = new LinkedBlockingQueue<OkCoinWebSocketAPIRequest>();
-  private final BlockingQueue<OkCoinPlaceLimitOrderRequest> ordersToExchange = new LinkedBlockingQueue<OkCoinPlaceLimitOrderRequest>();
-  private final BlockingQueue<OkCoinTradeResult> orderPlacementResultsFromExchange = new LinkedBlockingQueue<>();
 
   public OkCoinStreamingTradeService(Exchange exchange, ExchangeStreamingConfiguration exchangeStreamingConfiguration) {
     super(exchange, exchangeStreamingConfiguration);
@@ -45,27 +43,16 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
   }
 
   @Override
-  public String placeLimitOrder(LimitOrder limitOrder) {
-
-    Future<String> res = placeLimitOrderNonBlocking(limitOrder);
-    try {
-      return res.get();
-    } catch (InterruptedException | ExecutionException e) {
-      log.error("Unable to place order", e);
-      return null;
-    }
-
-  }
-
-  public Future<String> placeLimitOrderNonBlocking(LimitOrder limitOrder) {
+  public synchronized String placeLimitOrder(LimitOrder limitOrder) {
 
     try {
       OkCoinPlaceLimitOrderRequest request = new OkCoinPlaceLimitOrderRequest(limitOrder, channelProvider, apikey,
           signatureCreator);
       newRequestsQueue.put(request);
-      return request;
+      return request.get();
+
     } catch (InterruptedException e) {
-      log.error("Unable to place order {}", limitOrder, e);
+      log.error("Unable to place order", e);
       return null;
     }
 
@@ -93,8 +80,6 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
       return request;
 
     } catch (InterruptedException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
       return null;
     }
   }
@@ -121,8 +106,6 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
       return request;
 
     } catch (InterruptedException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
       return null;
     }
 
@@ -135,7 +118,7 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
 
   @Override
   public void connect() {
-    executor = Executors.newFixedThreadPool(3);
+    executor = Executors.newFixedThreadPool(2);
     executor.execute(new Runnable() {
 
       @Override
@@ -143,23 +126,12 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
         Thread.currentThread().setName("Request dispatcher");
         while (!Thread.currentThread().isInterrupted()) {
           try {
+            
             OkCoinWebSocketAPIRequest request = newRequestsQueue.take();
-            if (request instanceof OkCoinPlaceLimitOrderRequest) {
-              // Send new order to another thread for sequential
-              // processing, i.e. after sending an order
-              // we have to wait for the response from exchange
-              // before
-              // sending another one since OkCoin does not provide
-              // any mechanism
-              // to associate the response with the request for
-              // placing orders
-              ordersToExchange.put((OkCoinPlaceLimitOrderRequest) request);
-            } else {
-              requests.put(request.getOrderId(), request);
-              log.debug("Waiting for {}", request.getOrderId());
-              getSocketBase().addOneTimeChannel(request.getChannel(), request.getParams());
-            }
-
+            requests.put(request.getId(), request);
+            log.debug("Waiting for {}", request.getId());
+            getSocketBase().addOneTimeChannel(request.getChannel(), request.getParams());
+            
           } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             break;
@@ -169,32 +141,6 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
     });
 
     executor.execute(new Runnable() {
-      // Sequentially place orders - see the comment above
-
-      @Override
-      public void run() {
-        Thread.currentThread().setName("Order dispatcher");
-
-        while (!Thread.currentThread().isInterrupted()) {
-          try {
-            OkCoinPlaceLimitOrderRequest orderToSend = ordersToExchange.take();
-            getSocketBase().addOneTimeChannel(orderToSend.getChannel(), orderToSend.getParams());
-            OkCoinTradeResult result = orderPlacementResultsFromExchange.take();
-            if (result.isResult())
-              knownOrders.put(Long.toString(result.getOrderId()), orderToSend.getOrder());
-            orderToSend.set(result);
-          } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            break;
-          }
-        }
-      }
-    });
-
-    executor.execute(new Runnable() {
-      // Processing of all other responses from OkCoin - they may arrive
-      // in
-      // an arbitrary order
 
       @Override
       public void run() {
@@ -208,7 +154,12 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
             switch (event.getEventType()) {
             case ORDER_ADDED:
               log.debug("Processed addition of new order {}", ((OkCoinTradeResult) payload).getOrderId());
-              orderPlacementResultsFromExchange.put((OkCoinTradeResult) payload);
+              req = requests.get(OkCoinWebSocketAPIRequest.DEFAULT_REQUEST_ID);
+              if (req != null)
+                req.set((OkCoinTradeResult) payload);
+              else
+                log.error("Unexpected {} event: {}", event.getEventType(), event);
+              requests.remove(((OkCoinTradeResult) payload).getOrderId());
               break;
             case ORDER_CANCELED:
               log.debug("Processed cancellation for {}", ((OkCoinTradeResult) payload).getOrderId());
@@ -231,7 +182,13 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
               break;
             case ERROR:
               if (payload instanceof OkCoinPlaceOrderError) {
-                orderPlacementResultsFromExchange.put((OkCoinPlaceOrderError) payload);
+                log.debug("Processed error for order placement");
+                req = requests.get(OkCoinWebSocketAPIRequest.DEFAULT_REQUEST_ID);
+                if (req != null)
+                  req.set(false);
+                else
+                  log.error("Unexpected {} event: {}", event.getEventType(), event);
+                requests.remove(((OkCoinCancelOrderError) payload).getOrderId());
               } else if (payload instanceof OkCoinCancelOrderError) {
                 log.debug("Processed error for {}", ((OkCoinCancelOrderError) payload).getOrderId());
                 long orderId = ((OkCoinCancelOrderError) payload).getOrderId();

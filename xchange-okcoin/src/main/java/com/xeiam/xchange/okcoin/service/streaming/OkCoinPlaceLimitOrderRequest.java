@@ -13,7 +13,7 @@ import com.xeiam.xchange.okcoin.OkCoinStreamingUtils;
 import com.xeiam.xchange.okcoin.dto.trade.OkCoinTradeResult;
 
 public class OkCoinPlaceLimitOrderRequest extends OkCoinWebSocketAPIRequest implements Future<String> {
-
+  
   private LimitOrder limitOrder;
 
   OkCoinPlaceLimitOrderRequest(LimitOrder limitOrder, ChannelProvider channelProvider, String apikey,
@@ -49,11 +49,6 @@ public class OkCoinPlaceLimitOrderRequest extends OkCoinWebSocketAPIRequest impl
     return limitOrder;
   }
 
-  @Override
-  Long getOrderId() {
-    
-    throw new UnsupportedOperationException("Order Id does not exists for this object!");
-  }
 
   String checkOrderId(OkCoinTradeResult result) {
     

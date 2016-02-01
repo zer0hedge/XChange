@@ -24,7 +24,7 @@ public class OkCoinCancelOrderRequest extends OkCoinWebSocketAPIRequest implemen
 		params.put("sign", sign);
 	}
 
-	Long getOrderId() {
+	Long getId() {
 		return Long.valueOf(orderId);
 	}
 

@@ -6,6 +6,9 @@ import java.util.concurrent.TimeUnit;
 
 abstract class OkCoinWebSocketAPIRequest {
 
+  
+  public static final Long DEFAULT_REQUEST_ID = -1L;
+  
   protected Map<String, String> params;
   protected Object result = null;
   protected ChannelProvider channelProvider;
@@ -14,7 +17,9 @@ abstract class OkCoinWebSocketAPIRequest {
 
   abstract String getChannel();
 
-  abstract Long getOrderId();
+  Long getId() {
+    return DEFAULT_REQUEST_ID;
+  }
 
   Map<String, String> getParams() {
     return params;
