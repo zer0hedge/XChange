@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.exceptions.ExchangeException;
 import com.xeiam.xchange.okcoin.OkCoinDigest;
+import com.xeiam.xchange.service.streaming.ExchangeEventType;
 
 public class OkCoinGetOrderInfoRequest extends OkCoinWebSocketAPIRequest implements Future<LimitOrder> {
 
@@ -25,8 +26,8 @@ public class OkCoinGetOrderInfoRequest extends OkCoinWebSocketAPIRequest impleme
 		params.put("sign", sign);
 	}
 
-	Long getId() {
-		return Long.valueOf(orderId);
+	RequestIdentifier getIdentifier() {
+		return new RequestIdentifier(Long.valueOf(orderId), ExchangeEventType.USER_ORDER);
 	}
 
 	@Override
@@ -47,6 +48,7 @@ public class OkCoinGetOrderInfoRequest extends OkCoinWebSocketAPIRequest impleme
 			throw new ExchangeException("Unable to perform request");
 		return result;
 	}
+
 
 
 }

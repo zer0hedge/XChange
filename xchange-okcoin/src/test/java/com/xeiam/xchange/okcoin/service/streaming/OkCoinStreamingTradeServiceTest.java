@@ -1,6 +1,6 @@
 package com.xeiam.xchange.okcoin.service.streaming;
 
-import static org.fest.assertions.api.Assertions.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import org.hamcrest.core.IsEqual;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,213 +38,231 @@ import com.xeiam.xchange.service.streaming.ExchangeEventType;
 
 public class OkCoinStreamingTradeServiceTest {
 
-	public OkCoinStreamingTradeService sut;
-	private WebSocketBase socketBase;
+  public OkCoinStreamingTradeService sut;
+  private WebSocketBase socketBase;
 
-	LimitOrder mockLimitOrder() {
-		LimitOrder limitOrder = mock(LimitOrder.class);
-		when(limitOrder.getCurrencyPair()).thenReturn(CurrencyPair.BTC_USD);
-		when(limitOrder.getLimitPrice()).thenReturn(BigDecimal.TEN);
-		when(limitOrder.getTradableAmount()).thenReturn(BigDecimal.TEN);
-		return limitOrder;
-	}
+  LimitOrder mockLimitOrder() {
+    LimitOrder limitOrder = mock(LimitOrder.class);
+    when(limitOrder.getCurrencyPair()).thenReturn(CurrencyPair.BTC_USD);
+    when(limitOrder.getLimitPrice()).thenReturn(BigDecimal.TEN);
+    when(limitOrder.getTradableAmount()).thenReturn(BigDecimal.TEN);
+    return limitOrder;
+  }
 
-	@Before
-	public void setUp() {
+  @Before
+  public void setUp() {
 
-		Exchange okcoin = mock(OkCoinExchange.class);
-		ExchangeSpecification exchangeSpecification = mock(ExchangeSpecification.class);
-		when(exchangeSpecification.getExchangeSpecificParametersItem("Websocket_SslUri")).thenReturn("");
-		when(exchangeSpecification.getExchangeSpecificParametersItem("Use_Futures")).thenReturn(false);
-		when(exchangeSpecification.getExchangeSpecificParametersItem("Use_Intl")).thenReturn(true);
-		when(okcoin.getExchangeSpecification()).thenReturn(exchangeSpecification);
-		okcoin.applySpecification(exchangeSpecification);
-		OkCoinStreamingConfiguration config = mock(OkCoinStreamingConfiguration.class);
-		socketBase = mock(WebSocketBase.class);
+    Exchange okcoin = mock(OkCoinExchange.class);
+    ExchangeSpecification exchangeSpecification = mock(ExchangeSpecification.class);
+    when(exchangeSpecification.getExchangeSpecificParametersItem("Websocket_SslUri")).thenReturn("");
+    when(exchangeSpecification.getExchangeSpecificParametersItem("Use_Futures")).thenReturn(false);
+    when(exchangeSpecification.getExchangeSpecificParametersItem("Use_Intl")).thenReturn(true);
+    when(okcoin.getExchangeSpecification()).thenReturn(exchangeSpecification);
+    okcoin.applySpecification(exchangeSpecification);
+    OkCoinStreamingConfiguration config = mock(OkCoinStreamingConfiguration.class);
+    socketBase = mock(WebSocketBase.class);
 
-		sut = new OkCoinStreamingTradeService(okcoin, config);
-		sut.setSocketBase(socketBase);
-		sut.connect();
-	}
+    sut = new OkCoinStreamingTradeService(okcoin, config);
+    sut.setSocketBase(socketBase);
+    sut.connect();
+  }
 
-	@After
-	public void tearDown() {
-		sut.disconnect();
-	}
+  @After
+  public void tearDown() {
+    sut.disconnect();
+  }
 
-	@SuppressWarnings("unchecked")
-	void stubPlaceLimitOrderOkCoinResponse(final ExchangeEventType exchangeEventType, final Object payload) {
-		doAnswer(new Answer<String>() {
+  @SuppressWarnings("unchecked")
+  void stubOrderInfoChannelSubscription(final ExchangeEventType exchangeEventType, final Object payload) {
+    doAnswer(new Answer<String>() {
 
-			@Override
-			public String answer(InvocationOnMock invocation) throws Throwable {
-				if (invocation.getArgumentAt(0, String.class).equals(sut.channelProvider.getPlaceLimitOrder()))
-					sut.getMarketDataEventQueue().put(new OkCoinExchangeEvent(exchangeEventType, payload));
-				return null;
-			}
-		}).when(socketBase).addOneTimeChannel(anyString(), (Map<String, String>) anyObject());
+      @Override
+      public String answer(InvocationOnMock invocation) throws Throwable {
+        if (invocation.getArgumentAt(0, String.class).equals(sut.channelProvider.getOrderInfo()))
+          sut.getMarketDataEventQueue().put(new OkCoinExchangeEvent(exchangeEventType, payload));
+        return null;
+      }
+    }).when(socketBase).addOneTimeChannel(anyString(), (Map<String, String>) anyObject());
+  }
 
-	}
+  @SuppressWarnings("unchecked")
+  void stubCancelOrderChannelSubscription(final ExchangeEventType exchangeEventType, final Object payload) {
+    doAnswer(new Answer<String>() {
 
-	@Test
-	public void testPlaceLimitOrder() throws NotAvailableFromExchangeException, NotYetImplementedForExchangeException,
-			ExchangeException, IOException, InterruptedException, ExecutionException {
+      @Override
+      public String answer(InvocationOnMock invocation) throws Throwable {
+        if (invocation.getArgumentAt(0, String.class).equals(sut.channelProvider.getCancelOrder()))
+          sut.getMarketDataEventQueue().put(new OkCoinExchangeEvent(exchangeEventType, payload));
+        return null;
+      }
+    }).when(socketBase).addOneTimeChannel(anyString(), (Map<String, String>) anyObject());
 
-		LimitOrder limitOrder = mockLimitOrder();
-		stubPlaceLimitOrderOkCoinResponse(ExchangeEventType.ORDER_ADDED, new OkCoinTradeResult(true, 0, 100));
+  }
 
-		assertEquals("100", sut.placeLimitOrder(limitOrder));
+  @SuppressWarnings("unchecked")
+  void stubPlaceOrderChannelSubscription(final ExchangeEventType exchangeEventType, final Object payload) {
+    doAnswer(new Answer<String>() {
 
-	}
+      @Override
+      public String answer(InvocationOnMock invocation) throws Throwable {
+        if (invocation.getArgumentAt(0, String.class).equals(sut.channelProvider.getPlaceLimitOrder()))
+          sut.getMarketDataEventQueue().put(new OkCoinExchangeEvent(exchangeEventType, payload));
+        return null;
+      }
+    }).when(socketBase).addOneTimeChannel(anyString(), (Map<String, String>) anyObject());
 
-	@Test(expected = ExchangeException.class)
-	public void testPlaceLimitOrderFailure()
-			throws NotAvailableFromExchangeException, NotYetImplementedForExchangeException, ExchangeException,
-			IOException, InterruptedException, ExecutionException {
+  }
 
-		LimitOrder limitOrder = mockLimitOrder();
+  @Test
+  public void testPlaceLimitOrder() throws NotAvailableFromExchangeException, NotYetImplementedForExchangeException,
+      ExchangeException, IOException, InterruptedException, ExecutionException {
 
-		stubPlaceLimitOrderOkCoinResponse(ExchangeEventType.ERROR, new OkCoinPlaceOrderError(false, 10016, 0));
+    LimitOrder limitOrder = mockLimitOrder();
+    stubPlaceOrderChannelSubscription(ExchangeEventType.ORDER_ADDED, new OkCoinTradeResult(true, 0, 100));
 
-		sut.placeLimitOrder(limitOrder);
-	}
+    assertEquals("100", sut.placeLimitOrder(limitOrder));
 
-	@Test
-	public void testCancelOrder() throws NotAvailableFromExchangeException, NotYetImplementedForExchangeException,
-			ExchangeException, IOException, InterruptedException, ExecutionException {
+  }
 
-		LimitOrder limitOrder = mockLimitOrder();
-		stubPlaceLimitOrderOkCoinResponse(ExchangeEventType.ORDER_ADDED, new OkCoinTradeResult(true, 0, 100));
+  @Test(expected = ExchangeException.class)
+  public void testPlaceLimitOrderFailure() throws NotAvailableFromExchangeException,
+      NotYetImplementedForExchangeException, ExchangeException, IOException, InterruptedException, ExecutionException {
 
-		String id = sut.placeLimitOrder(limitOrder);
+    LimitOrder limitOrder = mockLimitOrder();
 
-		Future<Boolean> r = sut.cancelOrderNonBlocking(id, CurrencyPair.BTC_USD);
-		sut.getMarketDataEventQueue()
-				.put(new OkCoinExchangeEvent(ExchangeEventType.ORDER_CANCELED, new OkCoinTradeResult(true, 0, 100)));
-		assertThat(r.get()).isTrue();
+    stubPlaceOrderChannelSubscription(ExchangeEventType.ERROR, new OkCoinPlaceOrderError(false, 10016, 0));
 
-	}
+    sut.placeLimitOrder(limitOrder);
+  }
 
-	@Test(expected = ExchangeException.class)
-	public void testCancelOrderFailure()
-			throws NotAvailableFromExchangeException, NotYetImplementedForExchangeException, ExchangeException,
-			IOException, InterruptedException, ExecutionException {
+  @Test
+  public void testCancelOrder() throws NotAvailableFromExchangeException, NotYetImplementedForExchangeException,
+      ExchangeException, IOException, InterruptedException, ExecutionException {
 
-		LimitOrder limitOrder = mockLimitOrder();
-		stubPlaceLimitOrderOkCoinResponse(ExchangeEventType.ORDER_ADDED, new OkCoinTradeResult(true, 0, 100));
+    LimitOrder limitOrder = mockLimitOrder();
+    stubPlaceOrderChannelSubscription(ExchangeEventType.ORDER_ADDED, new OkCoinTradeResult(true, 0, 101));
 
-		String id = sut.placeLimitOrder(limitOrder);
+    String id = sut.placeLimitOrder(limitOrder);
 
-	
-		Future<Boolean> r = sut.cancelOrderNonBlocking(id, CurrencyPair.BTC_USD);
-		sut.getMarketDataEventQueue().put(new OkCoinExchangeEvent(ExchangeEventType.ERROR,
-				new OkCoinCancelOrderError(false, 10009, Long.valueOf(id))));
-		r.get();
+    stubCancelOrderChannelSubscription(ExchangeEventType.ORDER_CANCELED, new OkCoinTradeResult(true, 0, 101));
+    Future<Boolean> r = sut.cancelOrderNonBlocking(id, CurrencyPair.BTC_USD);
+    assertThat(r.get()).isTrue();
 
-	}
+  }
 
-	@Test
-	public void testGetOrder() throws NotAvailableFromExchangeException, NotYetImplementedForExchangeException,
-			ExchangeException, IOException, InterruptedException, ExecutionException {
+  @Test(expected = ExchangeException.class)
+  public void testCancelOrderFailure() throws NotAvailableFromExchangeException, NotYetImplementedForExchangeException,
+      ExchangeException, IOException, InterruptedException, ExecutionException {
 
-		LimitOrder limitOrder = mockLimitOrder();
+    LimitOrder limitOrder = mockLimitOrder();
+    stubPlaceOrderChannelSubscription(ExchangeEventType.ORDER_ADDED, new OkCoinTradeResult(true, 0, 100));
 
-		stubPlaceLimitOrderOkCoinResponse(ExchangeEventType.ORDER_ADDED, new OkCoinTradeResult(true, 0, 100));
+    String id = sut.placeLimitOrder(limitOrder);
 
-		String id = sut.placeLimitOrder(limitOrder);
+    Future<Boolean> r = sut.cancelOrderNonBlocking(id, CurrencyPair.BTC_USD);
+    sut.getMarketDataEventQueue().put(
+        new OkCoinExchangeEvent(ExchangeEventType.ERROR, new OkCoinCancelOrderError(false, 10009, Long.valueOf(id))));
+    r.get();
 
-		OkCoinOrder serverOrder = new OkCoinOrder(100L, 1, "btc_usd", "", limitOrder.getLimitPrice(),
-				limitOrder.getLimitPrice(), limitOrder.getTradableAmount(),
-				limitOrder.getTradableAmount().divide(new BigDecimal("2")), null);
-		Future<LimitOrder> orderInfo = sut.getOrderNonBlocking(id, CurrencyPair.BTC_USD);
-		sut.getMarketDataEventQueue().put(new OkCoinExchangeEvent(ExchangeEventType.USER_ORDER,
-				new OkCoinOrdersResult(true, 0, new OkCoinOrder[] { serverOrder })));
-		LimitOrder response = orderInfo.get();
+  }
 
-		assertEquals(id, response.getId());
-		assertEquals(limitOrder.getTradableAmount().divide(new BigDecimal("2")), response.getTradableAmount());
+  @Test
+  public void testGetOrder() throws NotAvailableFromExchangeException, NotYetImplementedForExchangeException,
+      ExchangeException, IOException, InterruptedException, ExecutionException {
 
-	}
-	
-	@Test(timeout=1000)
-	public void shouldReturnTheSameInfoTwice() throws NotAvailableFromExchangeException, NotYetImplementedForExchangeException,
-			ExchangeException, IOException, InterruptedException, ExecutionException {
+    LimitOrder limitOrder = mockLimitOrder();
 
-		LimitOrder limitOrder = mockLimitOrder();
+    stubPlaceOrderChannelSubscription(ExchangeEventType.ORDER_ADDED, new OkCoinTradeResult(true, 0, 101));
 
-		stubPlaceLimitOrderOkCoinResponse(ExchangeEventType.ORDER_ADDED, new OkCoinTradeResult(true, 0, 100));
+    String id = sut.placeLimitOrder(limitOrder);
 
-		String id = sut.placeLimitOrder(limitOrder);
+    OkCoinOrder serverOrder = new OkCoinOrder(101L, 1, "btc_usd", "", limitOrder.getLimitPrice(),
+        limitOrder.getLimitPrice(), limitOrder.getTradableAmount(),
+        limitOrder.getTradableAmount().divide(new BigDecimal("2")), null);
 
-		OkCoinOrder serverOrder = new OkCoinOrder(100L, 1, "btc_usd", "", limitOrder.getLimitPrice(),
-				limitOrder.getLimitPrice(), limitOrder.getTradableAmount(),
-				limitOrder.getTradableAmount().divide(new BigDecimal("2")), null);
-		Future<LimitOrder> orderInfo = sut.getOrderNonBlocking(id, CurrencyPair.BTC_USD);
-		Future<LimitOrder> orderInfo2 = sut.getOrderNonBlocking(id, CurrencyPair.BTC_USD);
+    stubOrderInfoChannelSubscription(ExchangeEventType.USER_ORDER,
+        new OkCoinOrdersResult(true, 0, new OkCoinOrder[] { serverOrder }));
+    Future<LimitOrder> orderInfo = sut.getOrderNonBlocking(id, CurrencyPair.BTC_USD);
+    LimitOrder response = orderInfo.get();
 
-		sut.getMarketDataEventQueue().put(new OkCoinExchangeEvent(ExchangeEventType.USER_ORDER,
-				new OkCoinOrdersResult(true, 0, new OkCoinOrder[] { serverOrder })));
-		
-		sut.getMarketDataEventQueue().put(new OkCoinExchangeEvent(ExchangeEventType.USER_ORDER,
-				new OkCoinOrdersResult(true, 0, new OkCoinOrder[] { serverOrder })));
+    assertEquals(id, response.getId());
+    assertEquals(limitOrder.getTradableAmount().divide(new BigDecimal("2")), response.getTradableAmount());
 
-		LimitOrder response = orderInfo.get();
-		LimitOrder response2 = orderInfo2.get();
-		
-		assertThat(response).isEqualTo(response2);
+  }
 
+  @Test(timeout = 1000)
+  public void shouldReturnTheSameInfoTwice() throws NotAvailableFromExchangeException,
+      NotYetImplementedForExchangeException, ExchangeException, IOException, InterruptedException, ExecutionException {
 
-	}
-	
-	
-	@Test(timeout=1000)
-	public void shouldReturnInfoThenCancel() throws NotAvailableFromExchangeException, NotYetImplementedForExchangeException,
-			ExchangeException, IOException, InterruptedException, ExecutionException {
+    LimitOrder limitOrder = mockLimitOrder();
 
-		LimitOrder limitOrder = mockLimitOrder();
+    stubPlaceOrderChannelSubscription(ExchangeEventType.ORDER_ADDED, new OkCoinTradeResult(true, 0, 100));
 
-		stubPlaceLimitOrderOkCoinResponse(ExchangeEventType.ORDER_ADDED, new OkCoinTradeResult(true, 0, 100));
+    String id = sut.placeLimitOrder(limitOrder);
 
-		String id = sut.placeLimitOrder(limitOrder);
-
-		OkCoinOrder serverOrder = new OkCoinOrder(100L, 1, "btc_usd", "", limitOrder.getLimitPrice(),
-				limitOrder.getLimitPrice(), limitOrder.getTradableAmount(),
-				limitOrder.getTradableAmount().divide(new BigDecimal("2")), null);
-		Future<LimitOrder> orderInfo = sut.getOrderNonBlocking(id, CurrencyPair.BTC_USD);
-		Future<Boolean> r = sut.cancelOrderNonBlocking(id, CurrencyPair.BTC_USD);
-
-		sut.getMarketDataEventQueue().put(new OkCoinExchangeEvent(ExchangeEventType.USER_ORDER,
-				new OkCoinOrdersResult(true, 0, new OkCoinOrder[] { serverOrder })));
-		
-		sut.getMarketDataEventQueue().put(new OkCoinExchangeEvent(ExchangeEventType.ERROR,
-				new OkCoinCancelOrderError(false, 10009, Long.valueOf(id))));
-		r.get();
-
-		LimitOrder response = orderInfo.get();
-		assertThat(response).isNotNull();
-		assertThat(r.get()).isTrue();
+    OkCoinOrder serverOrder = new OkCoinOrder(100L, 1, "btc_usd", "", limitOrder.getLimitPrice(),
+        limitOrder.getLimitPrice(), limitOrder.getTradableAmount(),
+        limitOrder.getTradableAmount().divide(new BigDecimal("2")), null);
+    
+    stubOrderInfoChannelSubscription(ExchangeEventType.USER_ORDER, new OkCoinOrdersResult(true, 0, new OkCoinOrder[] { serverOrder }));
+    
+    Future<LimitOrder> orderInfo = sut.getOrderNonBlocking(id, CurrencyPair.BTC_USD);
+    Future<LimitOrder> orderInfo2 = sut.getOrderNonBlocking(id, CurrencyPair.BTC_USD);
 
 
-	}
+    LimitOrder response = orderInfo.get();
+    LimitOrder response2 = orderInfo2.get();
 
+    assertThat(response).isEqualTo(response2);
 
+  }
 
-	@Test(expected = ExchangeException.class)
-	public void testGetOrderFailure() throws NotAvailableFromExchangeException, NotYetImplementedForExchangeException,
-			ExchangeException, IOException, InterruptedException, ExecutionException {
+  @Test(expected = ExchangeException.class, timeout = 1000)
+  public void shouldReturnInfoThenFailCancel() throws NotAvailableFromExchangeException,
+      NotYetImplementedForExchangeException, ExchangeException, IOException, InterruptedException, ExecutionException {
 
-		LimitOrder limitOrder = mockLimitOrder();
+    LimitOrder limitOrder = mockLimitOrder();
 
-		stubPlaceLimitOrderOkCoinResponse(ExchangeEventType.ORDER_ADDED, new OkCoinTradeResult(true, 0, 100));
+    stubPlaceOrderChannelSubscription(ExchangeEventType.ORDER_ADDED, new OkCoinTradeResult(true, 0, 100));
 
-		String id = sut.placeLimitOrder(limitOrder);
+    String id = sut.placeLimitOrder(limitOrder);
 
-		Future<LimitOrder> orderInfo = sut.getOrderNonBlocking(id, CurrencyPair.BTC_USD);
+    OkCoinOrder serverOrder = new OkCoinOrder(100L, 1, "btc_usd", "", limitOrder.getLimitPrice(),
+        limitOrder.getLimitPrice(), limitOrder.getTradableAmount(),
+        limitOrder.getTradableAmount().divide(new BigDecimal("2")), null);
 
-		sut.getMarketDataEventQueue().put(new OkCoinExchangeEvent(ExchangeEventType.ERROR,
-				new OkCoinGetOrderInfoError(false, 10002, Long.valueOf(id))));
-		orderInfo.get();
+    stubOrderInfoChannelSubscription(ExchangeEventType.USER_ORDER,
+        new OkCoinOrdersResult(true, 0, new OkCoinOrder[] { serverOrder }));
+    Future<LimitOrder> orderInfo = sut.getOrderNonBlocking(id, CurrencyPair.BTC_USD);
 
-	}
+    stubCancelOrderChannelSubscription(ExchangeEventType.ERROR,
+        new OkCoinCancelOrderError(false, 10009, Long.valueOf(id)));
+    Future<Boolean> r = sut.cancelOrderNonBlocking(id, CurrencyPair.BTC_USD);
+
+    r.get();
+
+    LimitOrder response = orderInfo.get();
+    assertThat(response).isNotNull();
+    assertThat(r.get()).isTrue();
+
+  }
+
+  @Test(expected = ExchangeException.class, timeout = 1000)
+  public void testGetOrderFailure() throws NotAvailableFromExchangeException, NotYetImplementedForExchangeException,
+      ExchangeException, IOException, InterruptedException, ExecutionException {
+
+    LimitOrder limitOrder = mockLimitOrder();
+
+    stubPlaceOrderChannelSubscription(ExchangeEventType.ORDER_ADDED, new OkCoinTradeResult(true, 0, 100));
+
+    String id = sut.placeLimitOrder(limitOrder);
+
+    stubOrderInfoChannelSubscription(ExchangeEventType.ERROR, new OkCoinGetOrderInfoError(false, 10002, Long.valueOf(id)));
+    
+    Future<LimitOrder> orderInfo = sut.getOrderNonBlocking(id, CurrencyPair.BTC_USD);
+
+    orderInfo.get();
+
+  }
 
 }

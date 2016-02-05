@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.xeiam.xchange.exceptions.ExchangeException;
 import com.xeiam.xchange.okcoin.OkCoinDigest;
+import com.xeiam.xchange.service.streaming.ExchangeEventType;
 
 public class OkCoinCancelOrderRequest extends OkCoinWebSocketAPIRequest implements Future<Boolean> {
 
@@ -24,8 +25,9 @@ public class OkCoinCancelOrderRequest extends OkCoinWebSocketAPIRequest implemen
 		params.put("sign", sign);
 	}
 
-	Long getId() {
-		return Long.valueOf(orderId);
+	@Override
+	RequestIdentifier getIdentifier() {
+		return new RequestIdentifier(Long.valueOf(orderId), ExchangeEventType.ORDER_CANCELED);
 	}
 
 	@Override
@@ -46,6 +48,7 @@ public class OkCoinCancelOrderRequest extends OkCoinWebSocketAPIRequest implemen
 			throw new ExchangeException("Could not cancel order");
 		return result;
 	}
+
 
 
 }

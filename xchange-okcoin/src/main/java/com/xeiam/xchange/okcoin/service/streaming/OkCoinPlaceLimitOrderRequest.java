@@ -11,10 +11,13 @@ import com.xeiam.xchange.exceptions.ExchangeException;
 import com.xeiam.xchange.okcoin.OkCoinDigest;
 import com.xeiam.xchange.okcoin.OkCoinStreamingUtils;
 import com.xeiam.xchange.okcoin.dto.trade.OkCoinTradeResult;
+import com.xeiam.xchange.service.streaming.ExchangeEventType;
 
 public class OkCoinPlaceLimitOrderRequest extends OkCoinWebSocketAPIRequest implements Future<String> {
   
   private LimitOrder limitOrder;
+  
+  public static final Long DUMMY_ID = -1L;
 
   OkCoinPlaceLimitOrderRequest(LimitOrder limitOrder, ChannelProvider channelProvider, String apikey,
       OkCoinDigest signatureCreator) {
@@ -47,6 +50,11 @@ public class OkCoinPlaceLimitOrderRequest extends OkCoinWebSocketAPIRequest impl
 
   public LimitOrder getOrder() {
     return limitOrder;
+  }
+  
+  @Override
+  RequestIdentifier getIdentifier() {
+    return new RequestIdentifier(DUMMY_ID, ExchangeEventType.ORDER_ADDED);
   }
 
 

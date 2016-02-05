@@ -27,6 +27,7 @@ import com.xeiam.xchange.okcoin.dto.trade.OkCoinOrdersResult;
 import com.xeiam.xchange.okcoin.dto.trade.OkCoinPlaceOrderError;
 import com.xeiam.xchange.okcoin.dto.trade.OkCoinTradeResult;
 import com.xeiam.xchange.service.streaming.ExchangeEvent;
+import com.xeiam.xchange.service.streaming.ExchangeEventType;
 import com.xeiam.xchange.service.streaming.ExchangeStreamingConfiguration;
 import com.xeiam.xchange.service.streaming.trade.StreamingTradeService;
 
@@ -112,7 +113,7 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
   }
 
   private ConcurrentMap<String, LimitOrder> knownOrders = new ConcurrentHashMap<>();
-  private ConcurrentMap<Long, OkCoinWebSocketAPIRequest> requests = new ConcurrentHashMap<>();
+  private RequestConveyor requests = new RequestConveyor();
   private Logger log = LoggerFactory.getLogger(this.getClass());
   private ExecutorService executor;
 
@@ -126,12 +127,12 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
         Thread.currentThread().setName("Request dispatcher");
         while (!Thread.currentThread().isInterrupted()) {
           try {
-            
+
             OkCoinWebSocketAPIRequest request = newRequestsQueue.take();
-            requests.put(request.getId(), request);
-            log.debug("Waiting for {}", request.getId());
+            requests.put(request);
+            log.debug("Waiting for {}", request.getIdentifier());
             getSocketBase().addOneTimeChannel(request.getChannel(), request.getParams());
-            
+
           } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             break;
@@ -151,64 +152,64 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
 
             Object payload = event.getPayload();
             OkCoinWebSocketAPIRequest req;
+            Long orderId;
             switch (event.getEventType()) {
             case ORDER_ADDED:
               log.debug("Processed addition of new order {}", ((OkCoinTradeResult) payload).getOrderId());
-              req = requests.get(OkCoinWebSocketAPIRequest.DEFAULT_REQUEST_ID);
+              req = requests.take(new RequestIdentifier(OkCoinPlaceLimitOrderRequest.DUMMY_ID, event.getEventType()));
               if (req != null)
                 req.set((OkCoinTradeResult) payload);
               else
                 log.error("Unexpected {} event: {}", event.getEventType(), event);
-              requests.remove(((OkCoinTradeResult) payload).getOrderId());
               break;
             case ORDER_CANCELED:
               log.debug("Processed cancellation for {}", ((OkCoinTradeResult) payload).getOrderId());
-              req = requests.get(((OkCoinTradeResult) payload).getOrderId());
+              req = requests
+                  .take(new RequestIdentifier(((OkCoinTradeResult) payload).getOrderId(), event.getEventType()));
               if (req != null)
                 req.set(true);
               else
                 log.error("Unexpected {} event: {}", event.getEventType(), event);
-              requests.remove(((OkCoinTradeResult) payload).getOrderId());
               break;
             case USER_ORDER:
               LimitOrder order = OkCoinAdapters.adaptOrder(((OkCoinOrdersResult) payload).getOrders()[0]);
               log.debug(order.toString());
-              req = requests.get(Long.valueOf(order.getId()));
+              req = requests.take(new RequestIdentifier(Long.valueOf(order.getId()), event.getEventType()));
               if (req != null)
                 req.set(order);
               else
                 log.error("Unexpected {} event: {}", event.getEventType(), event);
-              requests.remove(Long.valueOf(order.getId()));
               break;
             case ERROR:
               if (payload instanceof OkCoinPlaceOrderError) {
-                log.debug("Processed error for order placement");
-                req = requests.get(OkCoinWebSocketAPIRequest.DEFAULT_REQUEST_ID);
-                if (req != null)
-                  req.set(false);
-                else
-                  log.error("Unexpected {} event: {}", event.getEventType(), event);
-                requests.remove(((OkCoinCancelOrderError) payload).getOrderId());
-              } else if (payload instanceof OkCoinCancelOrderError) {
-                log.debug("Processed error for {}", ((OkCoinCancelOrderError) payload).getOrderId());
-                long orderId = ((OkCoinCancelOrderError) payload).getOrderId();
-                req = requests.get(orderId);
-                if (req != null)
-                  req.set(false);
-                else
-                  log.error("Unexpected {} event: {}", event.getEventType(), event);
-                requests.remove(((OkCoinCancelOrderError) payload).getOrderId());
 
-              }
-              if (payload instanceof OkCoinGetOrderInfoError) {
+                log.debug("Processed error for order placement");
+                req = requests
+                    .take(new RequestIdentifier(OkCoinPlaceLimitOrderRequest.DUMMY_ID, ExchangeEventType.ORDER_ADDED));
+                if (req != null)
+                  req.set(payload);
+                else
+                  log.error("Unexpected {} event: {}", event.getEventType(), event);
+
+              } else if (payload instanceof OkCoinCancelOrderError) {
+
+                log.debug("Processed error for {}", ((OkCoinCancelOrderError) payload).getOrderId());
+                orderId = ((OkCoinCancelOrderError) payload).getOrderId();
+                req = requests.take(new RequestIdentifier(orderId, ExchangeEventType.ORDER_CANCELED));
+                if (req != null)
+                  req.set(false);
+                else
+                  log.error("Unexpected {} event: {}", event.getEventType(), event);
+
+              } else if (payload instanceof OkCoinGetOrderInfoError) {
+
                 log.debug("Processed error for {}", ((OkCoinGetOrderInfoError) payload).getOrderId());
-                long orderId = ((OkCoinGetOrderInfoError) payload).getOrderId();
-                req = requests.get(orderId);
+                orderId = ((OkCoinGetOrderInfoError) payload).getOrderId();
+                req = requests.take(new RequestIdentifier(orderId, ExchangeEventType.USER_ORDER));
                 if (req != null)
                   req.set(null);
                 else
                   log.error("Unexpected {} event: {}", event.getEventType(), event);
-                requests.remove(((OkCoinGetOrderInfoError) payload).getOrderId());
               } else
                 log.error("Unprocessed error: {}", event.toString());
               break;

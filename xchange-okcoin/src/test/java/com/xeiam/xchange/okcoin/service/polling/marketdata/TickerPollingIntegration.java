@@ -2,6 +2,7 @@ package com.xeiam.xchange.okcoin.service.polling.marketdata;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.xeiam.xchange.Exchange;
@@ -18,6 +19,7 @@ import com.xeiam.xchange.service.polling.marketdata.PollingMarketDataService;
 public class TickerPollingIntegration {
 
   @Test
+  @Ignore // too slow
   public void tickerFetchPollingChinaTest() throws Exception {
     ExchangeSpecification exSpec = new ExchangeSpecification(OkCoinExchange.class);
     exSpec.setExchangeSpecificParametersItem("Use_Intl", false);

@@ -7,8 +7,6 @@ import java.util.concurrent.TimeUnit;
 abstract class OkCoinWebSocketAPIRequest {
 
   
-  public static final Long DEFAULT_REQUEST_ID = -1L;
-  
   protected Map<String, String> params;
   protected Object result = null;
   protected ChannelProvider channelProvider;
@@ -16,11 +14,9 @@ abstract class OkCoinWebSocketAPIRequest {
   private CountDownLatch latch = new CountDownLatch(1);
 
   abstract String getChannel();
-
-  Long getId() {
-    return DEFAULT_REQUEST_ID;
-  }
-
+  
+  abstract RequestIdentifier getIdentifier();
+  
   Map<String, String> getParams() {
     return params;
   }
@@ -60,6 +56,11 @@ abstract class OkCoinWebSocketAPIRequest {
 
   public boolean isDone() {
     return latch.getCount() == 0;
+  }
+
+  @Override
+  public String toString() {
+    return "OkCoinWebSocketAPIRequest [getIdentifier()=" + getIdentifier() + "]";
   }
 
 }

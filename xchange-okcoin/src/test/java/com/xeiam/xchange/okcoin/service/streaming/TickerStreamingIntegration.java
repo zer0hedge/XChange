@@ -3,6 +3,7 @@ package com.xeiam.xchange.okcoin.service.streaming;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import org.java_websocket.WebSocket;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.xeiam.xchange.Exchange;
@@ -11,7 +12,6 @@ import com.xeiam.xchange.ExchangeSpecification;
 import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.marketdata.Ticker;
 import com.xeiam.xchange.okcoin.OkCoinExchange;
-import com.xeiam.xchange.okcoin.service.streaming.OkCoinStreamingConfiguration;
 import com.xeiam.xchange.service.streaming.ExchangeEvent;
 import com.xeiam.xchange.service.streaming.ExchangeEventType;
 import com.xeiam.xchange.service.streaming.marketdata.StreamingMarketDataService;
@@ -22,6 +22,7 @@ import com.xeiam.xchange.service.streaming.marketdata.StreamingMarketDataService
 public class TickerStreamingIntegration {
 
   @Test
+  @Ignore // too slow
   public void tickerFetchStreamingChinaTest() throws Exception {
     ExchangeSpecification exSpec = new ExchangeSpecification(OkCoinExchange.class);
     exSpec.setExchangeSpecificParametersItem("Use_Intl", false);

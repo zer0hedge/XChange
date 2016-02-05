@@ -15,6 +15,7 @@ import org.mockito.Mockito;
 import com.xeiam.xchange.okcoin.OkCoinDigest;
 
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 
 public class WebSocketBaseTest {
 
@@ -23,7 +24,7 @@ public class WebSocketBaseTest {
 
     WebSocketBase sut = new WebSocketBase("", null);
     sut.channel = mock(Channel.class);
-    when(sut.channel.writeAndFlush(anyObject())).thenReturn(null);
+    when(sut.channel.writeAndFlush(anyObject())).thenReturn(mock(ChannelFuture.class));
     sut.setStatus(true);
     
     OkCoinDigest signatureCreator = new OkCoinDigest("123456", "lol");

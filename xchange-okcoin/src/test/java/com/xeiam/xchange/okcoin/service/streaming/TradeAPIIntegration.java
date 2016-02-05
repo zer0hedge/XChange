@@ -42,7 +42,7 @@ import com.xeiam.xchange.okcoin.OkCoinExchange;
  * 	    4. Remove @Ignore below and then run the tests in your IDE or by Maven 
  *
  */
-//@Ignore
+@Ignore
 public class TradeAPIIntegration {
 
 	// Change it!
@@ -103,6 +103,7 @@ public class TradeAPIIntegration {
 	}
 	
 	@Test
+	@Ignore
 	public void shouldPlaceOrderAndGetInfoAndCancelIt() throws NotAvailableFromExchangeException, NotYetImplementedForExchangeException, ExchangeException, IOException, InterruptedException, ExecutionException, TimeoutException {
 		// Set limit price below appropriately, so order will NOT get executed until it is cancelled by the test !
 		// If the test fails, you have to CANCEL ORDER MANUALLY !
