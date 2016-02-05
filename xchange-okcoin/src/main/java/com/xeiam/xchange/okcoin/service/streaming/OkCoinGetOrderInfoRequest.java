@@ -25,7 +25,7 @@ public class OkCoinGetOrderInfoRequest extends OkCoinWebSocketAPIRequest impleme
 		params.put("sign", sign);
 	}
 
-	Long getOrderId() {
+	Long getId() {
 		return Long.valueOf(orderId);
 	}
 

@@ -97,5 +97,23 @@ public class OkCoinWebSocketServiceTest {
 
     assertEquals(20914907L, payload.getOrders()[0].getOrderId());
   }
+  
+  @Test
+  public void receiveOrderResponseFailTest()
+      throws InterruptedException, JsonParseException, JsonMappingException, IOException {
+    String responseMsg = "[{\"channel\": \"ok_spotusd_order_info\","
+        + "\"data\": "
+        + "{\"orders\": "
+        + "[{\"amount\": 0.1,\"avg_price\": 1.961,\"create_date\": 1422502117000,\"deal_amount\": 0.1,\"order_id\": 20914907,\"orders_id\": 20914907,\"price\": 0,\"status\": 2,\"symbol\": \"ltc_usd\",\"type\": \"sell_market\"}],\"result\": true}}]"
+        .replace("'", "\"");
+
+    when(channelProvider.getOrderInfo()).thenReturn("ok_spotusd_order_info");
+
+    sut.onReceive(responseMsg);
+
+    OkCoinOrdersResult payload = (OkCoinOrdersResult) eventQueue.take().getPayload();
+
+    assertEquals(20914907L, payload.getOrders()[0].getOrderId());
+  }
 
 }
