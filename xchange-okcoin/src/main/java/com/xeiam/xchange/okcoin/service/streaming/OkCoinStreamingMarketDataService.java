@@ -9,7 +9,7 @@ public class OkCoinStreamingMarketDataService extends OkCoinBaseStreamingService
 
   public OkCoinStreamingMarketDataService(Exchange exchange,
       ExchangeStreamingConfiguration exchangeStreamingConfiguration) {
-    super(exchange, exchangeStreamingConfiguration);
+    super(exchange, exchangeStreamingConfiguration, "MDS");
   }
 
   public void addTickerChannel(CurrencyPair currencyPair) {

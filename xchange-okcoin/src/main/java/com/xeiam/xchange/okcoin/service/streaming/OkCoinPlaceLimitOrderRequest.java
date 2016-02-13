@@ -2,6 +2,7 @@ package com.xeiam.xchange.okcoin.service.streaming;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -38,12 +39,12 @@ public class OkCoinPlaceLimitOrderRequest extends OkCoinWebSocketAPIRequest impl
     return channelProvider.getPlaceLimitOrder();
   }
 
-  public String get() throws InterruptedException {
+  public String get() throws InterruptedException, ExecutionException {
     
     return checkOrderId((OkCoinTradeResult) super.get());
   }
 
-  public String get(long timeout, TimeUnit unit) throws InterruptedException {
+  public String get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException {
     
     return checkOrderId((OkCoinTradeResult) super.get(timeout, unit));
   }

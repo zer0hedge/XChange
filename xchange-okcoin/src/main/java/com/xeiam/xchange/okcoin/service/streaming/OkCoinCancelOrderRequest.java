@@ -3,6 +3,7 @@ package com.xeiam.xchange.okcoin.service.streaming;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -35,11 +36,11 @@ public class OkCoinCancelOrderRequest extends OkCoinWebSocketAPIRequest implemen
 		return channelProvider.getCancelOrder();
 	}
 	
-	public Boolean get() throws InterruptedException{
+	public Boolean get() throws InterruptedException, ExecutionException {
 		return checkResult((Boolean) super.get());
 	}
 	
-	public Boolean get(long timeout, TimeUnit unit) throws InterruptedException {
+	public Boolean get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException {
 		return checkResult((Boolean) super.get(timeout,unit));
 	}
 

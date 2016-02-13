@@ -38,23 +38,29 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
   private final BlockingQueue<OkCoinWebSocketAPIRequest> newRequestsQueue = new LinkedBlockingQueue<OkCoinWebSocketAPIRequest>();
 
   public OkCoinStreamingTradeService(Exchange exchange, ExchangeStreamingConfiguration exchangeStreamingConfiguration) {
-    super(exchange, exchangeStreamingConfiguration);
+    super(exchange, exchangeStreamingConfiguration, "TS");
     apikey = exchange.getExchangeSpecification().getApiKey();
     signatureCreator = new OkCoinDigest(apikey, exchange.getExchangeSpecification().getSecretKey());
   }
 
   @Override
   public synchronized String placeLimitOrder(LimitOrder limitOrder) {
+    while (true) {
+      try {
+        OkCoinPlaceLimitOrderRequest request = new OkCoinPlaceLimitOrderRequest(limitOrder, channelProvider, apikey,
+            signatureCreator);
+        newRequestsQueue.put(request);
+        String orderId = request.get();
+        knownOrders.put(orderId, limitOrder);
+        return orderId;
 
-    try {
-      OkCoinPlaceLimitOrderRequest request = new OkCoinPlaceLimitOrderRequest(limitOrder, channelProvider, apikey,
-          signatureCreator);
-      newRequestsQueue.put(request);
-      return request.get();
-
-    } catch (InterruptedException e) {
-      log.error("Unable to place order", e);
-      return null;
+      } catch (InterruptedException e) {
+        log.error("Unable to place order", e);
+        return null;
+      } catch (ExecutionException e) {
+        log.warn(e.getCause().getMessage());
+        continue;
+      }
     }
 
   }
@@ -63,23 +69,26 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
   public void cancelOrder(String orderId)
       throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException {
 
-    Future<Boolean> res = cancelOrderNonBlocking(orderId, knownOrders.get(orderId).getCurrencyPair());
-    try {
-      res.get();
-    } catch (InterruptedException | ExecutionException e) {
-      log.error("Unable to cancel order", e);
+    while (true) {
+      Future<Boolean> res = cancelOrderNonBlocking(orderId, knownOrders.get(orderId).getCurrencyPair());
+      try {
+        res.get();
+      } catch (InterruptedException e) {
+        log.error("Unable to cancel order", e);
+      } catch (ExecutionException e) {
+        log.warn(e.getCause().getMessage());
+        continue;
+      }
     }
-    return;
-
   }
 
   public Future<Boolean> cancelOrderNonBlocking(String orderId, CurrencyPair currencyPair) {
+    
     try {
       OkCoinCancelOrderRequest request = new OkCoinCancelOrderRequest(orderId,
           currencyPair.toString().replace("/", "_").toLowerCase(), channelProvider, apikey, signatureCreator);
       newRequestsQueue.put(request);
       return request;
-
     } catch (InterruptedException e) {
       return null;
     }
@@ -89,14 +98,18 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
   public LimitOrder getOrder(String orderId)
       throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException {
 
-    Future<LimitOrder> res = getOrderNonBlocking(orderId, knownOrders.get(orderId).getCurrencyPair());
-    try {
-      return res.get();
-    } catch (InterruptedException | ExecutionException e) {
-      log.error("Unable to cancel order", e);
+    while (true) {
+      Future<LimitOrder> res = getOrderNonBlocking(orderId, knownOrders.get(orderId).getCurrencyPair());
+      try {
+        return res.get();
+      } catch (InterruptedException e) {
+        log.error("Unable to cancel order", e);
+      } catch (ExecutionException e) {
+        log.warn(e.getCause().getMessage());
+        continue;
+      }
+      return null;
     }
-    return null;
-
   }
 
   public Future<LimitOrder> getOrderNonBlocking(String orderId, CurrencyPair currencyPair) {
@@ -214,6 +227,7 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
                 log.error("Unprocessed error: {}", event.toString());
               break;
             case DISCONNECT:
+              log.warn("Disconnect event arrived!");
               break;
             default:
               log.debug("Unprocessed {} event: {}", event.getEventType(), event);

@@ -2,6 +2,7 @@ package com.xeiam.xchange.okcoin.service.streaming;
 
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 abstract class OkCoinWebSocketAPIRequest {
@@ -12,6 +13,7 @@ abstract class OkCoinWebSocketAPIRequest {
   protected ChannelProvider channelProvider;
 
   private CountDownLatch latch = new CountDownLatch(1);
+  private boolean IOException;
 
   abstract String getChannel();
   
@@ -24,9 +26,9 @@ abstract class OkCoinWebSocketAPIRequest {
   void set(Object result) {
     
     this.result = result;
+    this.IOException = false;
     latch.countDown();
   }
-
   OkCoinWebSocketAPIRequest(ChannelProvider channelProvider) {
     
     this.channelProvider = channelProvider;
@@ -37,15 +39,19 @@ abstract class OkCoinWebSocketAPIRequest {
     return false;
   }
 
-  public Object get() throws InterruptedException {
+  public Object get() throws InterruptedException, ExecutionException {
     
     latch.await();
+    if (IOException)
+      throw new ExecutionException(new java.io.IOException("Could not deliver message or receive response."));
     return result;
   }
 
-  public Object get(long timeout, TimeUnit unit) throws InterruptedException {
+  public Object get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException {
     
     latch.await(timeout, unit);
+    if (IOException)
+      throw new ExecutionException(new java.io.IOException("Could not deliver message or receive response."));
     return result;
   }
 
@@ -55,7 +61,14 @@ abstract class OkCoinWebSocketAPIRequest {
   }
 
   public boolean isDone() {
+    
     return latch.getCount() == 0;
+  }
+  
+  public void setIOException() {
+    
+    IOException = true;
+    latch.countDown();
   }
 
   @Override

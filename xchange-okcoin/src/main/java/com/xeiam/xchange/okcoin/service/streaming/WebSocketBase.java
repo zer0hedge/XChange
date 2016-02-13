@@ -48,6 +48,8 @@ class WebSocketBase {
 
   Set<String> subscribedChannels = new HashSet<String>();
 
+  private String name = "";
+
   WebSocketBase(String url, WebSocketService service) {
     this.url = url;
     this.service = service;
@@ -64,10 +66,12 @@ class WebSocketBase {
     }
 
     monitor = new MonitorTask(this);
+    monitor.setName(name+"monitor");
+    
     this.connect();
 
     timerTask = new Timer();
-    timerTask.schedule(monitor, 1000, 1000);
+    timerTask.schedule(monitor, 3000, 1000);
   }
 
   void setStatus(boolean flag) {
@@ -155,10 +159,7 @@ class WebSocketBase {
         Thread.sleep(100);
       }
       log.debug("Sending message: " + message);
-      ChannelFuture future = channel.writeAndFlush(new TextWebSocketFrame(message));
-      future.await();
-      if (!future.isSuccess())
-        log.warn("Failed to send message");
+      channel.writeAndFlush(new TextWebSocketFrame(message));
       
     } catch (InterruptedException e) {
 
@@ -171,6 +172,8 @@ class WebSocketBase {
   }
 
   void reConnect() {
+    isAlive = false;
+
     try {
       log.debug("Reconnecting");
       this.group.shutdownGracefully();
@@ -187,5 +190,9 @@ class WebSocketBase {
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  public void setName(String name) {
+    this.name = name;
   }
 }

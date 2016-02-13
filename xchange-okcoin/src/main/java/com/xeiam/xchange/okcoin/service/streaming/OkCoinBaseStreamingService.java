@@ -19,7 +19,7 @@ class OkCoinBaseStreamingService implements StreamingExchangeService {
 
   private final OkCoinStreamingConfiguration exchangeStreamingConfiguration;
 
-  OkCoinBaseStreamingService(Exchange exchange, ExchangeStreamingConfiguration streamingConfiguration) {
+  OkCoinBaseStreamingService(Exchange exchange, ExchangeStreamingConfiguration streamingConfiguration, String name) {
     
     this.exchangeStreamingConfiguration = (OkCoinStreamingConfiguration) streamingConfiguration;
 
@@ -34,6 +34,7 @@ class OkCoinBaseStreamingService implements StreamingExchangeService {
         this.exchangeStreamingConfiguration.getMarketDataCurrencyPairs());
     
     socketBase = new WebSocketBase(sslUri, socketService);
+    socketBase.setName(name);
   }
 
   @Override
