@@ -30,134 +30,139 @@ import com.xeiam.xchange.service.streaming.ExchangeEvent;
 import com.xeiam.xchange.service.streaming.ExchangeEventType;
 
 class OkCoinWebSocketService implements WebSocketService {
-	private final ObjectMapper mapper = new ObjectMapper();
-	private final JsonFactory jsonFactory = new JsonFactory();
-	private final BlockingQueue<ExchangeEvent> eventQueue;
-	private final CurrencyPair[] currencyPairs;
-	private final ChannelProvider channelProvider;
+  private final ObjectMapper mapper = new ObjectMapper();
+  private final JsonFactory jsonFactory = new JsonFactory();
+  private final BlockingQueue<ExchangeEvent> eventQueue;
+  private final CurrencyPair[] currencyPairs;
+  private final ChannelProvider channelProvider;
 
-	private final Logger log = LoggerFactory.getLogger(OkCoinWebSocketService.class);
+  private final Logger log = LoggerFactory.getLogger(OkCoinWebSocketService.class);
 
-	OkCoinWebSocketService(BlockingQueue<ExchangeEvent> eventQueue, ChannelProvider channelProvider,
-			CurrencyPair[] currencyPairs) {
-		this.eventQueue = eventQueue;
-		this.channelProvider = channelProvider;
-		this.currencyPairs = currencyPairs;
-	}
+  OkCoinWebSocketService(BlockingQueue<ExchangeEvent> eventQueue, ChannelProvider channelProvider,
+      CurrencyPair[] currencyPairs) {
+    this.eventQueue = eventQueue;
+    this.channelProvider = channelProvider;
+    this.currencyPairs = currencyPairs;
+  }
 
-	@Override
-	public void onReceive(String msg) throws JsonParseException, JsonMappingException, IOException {
-	  log.debug("Received message: "+msg);
-		JsonParser parser = jsonFactory.createParser(msg);
-		if (parser.nextToken() == JsonToken.START_ARRAY) {
-			ArrayNode readTree = (ArrayNode) mapper.readTree(msg);
+  @Override
+  public void onReceive(String msg) throws JsonParseException, JsonMappingException, IOException {
+    log.debug("Received message: " + msg);
+    JsonParser parser = jsonFactory.createParser(msg);
+    if (parser.nextToken() == JsonToken.START_ARRAY) {
+      ArrayNode readTree = (ArrayNode) mapper.readTree(msg);
 
-			Iterator<JsonNode> iterator = readTree.iterator();
-			while (iterator.hasNext()) {
-				JsonNode node = iterator.next();
+      Iterator<JsonNode> iterator = readTree.iterator();
+      while (iterator.hasNext()) {
+        JsonNode node = iterator.next();
 
-				// parse any requested channels
-				for (int i = 0; i < currencyPairs.length; i++) {
-					parseExchangeEvent(node, currencyPairs[i]);
-				}
-			}
-		} else {
-			// only pong should be here
-		}
-	}
+        // parse any requested channels
+        for (int i = 0; i < currencyPairs.length; i++) {
+          parseExchangeEvent(node, currencyPairs[i]);
+        }
+      }
+    } else {
+      // only pong should be here
+    }
+  }
 
-	private void parseExchangeEvent(JsonNode node, CurrencyPair currencyPair)
-			throws JsonParseException, JsonMappingException, IOException {
+  private void parseExchangeEvent(JsonNode node, CurrencyPair currencyPair)
+      throws JsonParseException, JsonMappingException, IOException {
 
-		if (node.get("channel").textValue().equals(channelProvider.getDepth(currencyPair))) {
-			parseDepth(node, currencyPair);
+    if (node.get("channel").textValue().equals(channelProvider.getDepth(currencyPair))) {
+      parseDepth(node, currencyPair);
 
-		} else if (node.get("channel").textValue().equals(channelProvider.getTrades(currencyPair))) {
-			parseTrades(node, currencyPair);
+    } else if (node.get("channel").textValue().equals(channelProvider.getTrades(currencyPair))) {
+      parseTrades(node, currencyPair);
 
-		} else if (node.get("channel").textValue().equals(channelProvider.getTicker(currencyPair))) {
-			parseTicker(node, currencyPair);
+    } else if (node.get("channel").textValue().equals(channelProvider.getTicker(currencyPair))) {
+      parseTicker(node, currencyPair);
 
-		} else if (node.get("channel").textValue().equals(channelProvider.getPlaceLimitOrder())) {
-			parseLimitOrderPlacementResponse(node);
+    } else if (node.get("channel").textValue().equals(channelProvider.getPlaceLimitOrder())) {
+      parseLimitOrderPlacementResponse(node);
 
-		} else if (node.get("channel").textValue().equals(channelProvider.getCancelOrder())) {
-			parseCancelOrderResponse(node);
+    } else if (node.get("channel").textValue().equals(channelProvider.getCancelOrder())) {
+      parseCancelOrderResponse(node);
 
-		} else if (node.get("channel").textValue().equals(channelProvider.getOrderInfo())) {
-			parseOrderInfoResponse(node);
-		}
+    } else if (node.get("channel").textValue().equals(channelProvider.getOrderInfo())) {
+      parseOrderInfoResponse(node);
+    }
 
-	}
+  }
 
-	private void parseOrderInfoResponse(JsonNode node) throws JsonParseException, JsonMappingException, IOException {
+  private void parseOrderInfoResponse(JsonNode node) throws JsonParseException, JsonMappingException, IOException {
 
-		if (!node.has("errorcode")) {
-			OkCoinOrdersResult result = mapper.readValue(node.get("data").toString(), OkCoinOrdersResult.class);
-			putEvent(ExchangeEventType.USER_ORDER, result);
-		} else {
-			putEvent(ExchangeEventType.ERROR, new OkCoinGetOrderInfoError(false, node.get("errorcode").asInt(), node.get("order_id").asLong()));
-		}
-	}
+    if (!node.has("errorcode")) {
+      OkCoinOrdersResult result = mapper.readValue(node.get("data").toString(), OkCoinOrdersResult.class);
+      putEvent(ExchangeEventType.USER_ORDER, result);
+    } else {
+      putEvent(ExchangeEventType.ERROR,
+          new OkCoinGetOrderInfoError(false, node.get("errorcode").asInt(), node.get("order_id").asLong()));
+    }
+  }
 
-	private void parseCancelOrderResponse(JsonNode node) throws JsonParseException, JsonMappingException, IOException {
+  private void parseCancelOrderResponse(JsonNode node) throws JsonParseException, JsonMappingException, IOException {
 
-		if (!node.has("errorcode")) {
-			OkCoinTradeResult result = mapper.readValue(node.get("data").toString(), OkCoinTradeResult.class);
-			putEvent(ExchangeEventType.ORDER_CANCELED, result);
-		} else {
-			putEvent(ExchangeEventType.ERROR,
-					new OkCoinCancelOrderError(false, node.get("errorcode").asInt(), node.get("order_id").asLong()));
-		}
-	}
+    if (!node.has("errorcode")) {
+      OkCoinTradeResult result = mapper.readValue(node.get("data").toString(), OkCoinTradeResult.class);
+      putEvent(ExchangeEventType.ORDER_CANCELED, result);
+    } else if (node.get("errorcode").asInt() == 10050) {
+      // Exchange for some reason does not provide orderId's on errors
+      OkCoinTradeResult result = new OkCoinTradeResult(true, 0, -1);
+      putEvent(ExchangeEventType.ORDER_CANCELED, result);
+    } else {
+      putEvent(ExchangeEventType.ERROR,
+          new OkCoinCancelOrderError(false, node.get("errorcode").asInt(), node.get("order_id").asLong()));
+    }
+  }
 
-	private void parseLimitOrderPlacementResponse(JsonNode node)
-			throws JsonParseException, JsonMappingException, IOException {
+  private void parseLimitOrderPlacementResponse(JsonNode node)
+      throws JsonParseException, JsonMappingException, IOException {
 
-		if (!node.has("errorcode")) {
-			OkCoinTradeResult result = mapper.readValue(node.get("data").toString(), OkCoinTradeResult.class);
-			putEvent(ExchangeEventType.ORDER_ADDED, result);
-		} else {
-			putEvent(ExchangeEventType.ERROR, new OkCoinPlaceOrderError(false, node.get("errorcode").asInt(), -1L));
-		}
-	}
+    if (!node.has("errorcode")) {
+      OkCoinTradeResult result = mapper.readValue(node.get("data").toString(), OkCoinTradeResult.class);
+      putEvent(ExchangeEventType.ORDER_ADDED, result);
+    } else {
+      putEvent(ExchangeEventType.ERROR, new OkCoinPlaceOrderError(false, node.get("errorcode").asInt(), -1L));
+    }
+  }
 
-	private void parseTicker(JsonNode node, CurrencyPair currencyPair)
-			throws IOException, JsonParseException, JsonMappingException {
+  private void parseTicker(JsonNode node, CurrencyPair currencyPair)
+      throws IOException, JsonParseException, JsonMappingException {
 
-		OkCoinStreamingTicker ticker = mapper.readValue(node.get("data").toString(), OkCoinStreamingTicker.class);
-		OkCoinTickerResponse tickerResponse = new OkCoinTickerResponse(ticker);
-		tickerResponse.setDate(ticker.getTimestamp());
-		putEvent(ExchangeEventType.TICKER, OkCoinAdapters.adaptTicker(tickerResponse, currencyPair));
-	}
+    OkCoinStreamingTicker ticker = mapper.readValue(node.get("data").toString(), OkCoinStreamingTicker.class);
+    OkCoinTickerResponse tickerResponse = new OkCoinTickerResponse(ticker);
+    tickerResponse.setDate(ticker.getTimestamp());
+    putEvent(ExchangeEventType.TICKER, OkCoinAdapters.adaptTicker(tickerResponse, currencyPair));
+  }
 
-	private void parseDepth(JsonNode node, CurrencyPair currencyPair)
-			throws IOException, JsonParseException, JsonMappingException {
+  private void parseDepth(JsonNode node, CurrencyPair currencyPair)
+      throws IOException, JsonParseException, JsonMappingException {
 
-		OkCoinDepth depth = mapper.readValue(node.get("data").toString(), OkCoinStreamingDepth.class);
-		putEvent(ExchangeEventType.DEPTH, OkCoinAdapters.adaptOrderBook(depth, currencyPair));
-	}
+    OkCoinDepth depth = mapper.readValue(node.get("data").toString(), OkCoinStreamingDepth.class);
+    putEvent(ExchangeEventType.DEPTH, OkCoinAdapters.adaptOrderBook(depth, currencyPair));
+  }
 
-	private void parseTrades(JsonNode node, CurrencyPair currencyPair) {
+  private void parseTrades(JsonNode node, CurrencyPair currencyPair) {
 
-		JsonNode jsonNode = node.get("data");
-		for (int i = 0; i < jsonNode.size(); i++) {
-			JsonNode trade = jsonNode.get(i);
-			putEvent(ExchangeEventType.TRADE, OkCoinAdapters.adaptStreamingTrade(trade, currencyPair));
-		}
-	}
+    JsonNode jsonNode = node.get("data");
+    for (int i = 0; i < jsonNode.size(); i++) {
+      JsonNode trade = jsonNode.get(i);
+      putEvent(ExchangeEventType.TRADE, OkCoinAdapters.adaptStreamingTrade(trade, currencyPair));
+    }
+  }
 
-	private void putEvent(ExchangeEventType eventType, Object payload) {
-		try {
-			eventQueue.put(new OkCoinExchangeEvent(eventType, payload));
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		}
-	}
+  private void putEvent(ExchangeEventType eventType, Object payload) {
+    try {
+      eventQueue.put(new OkCoinExchangeEvent(eventType, payload));
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
-	@Override
-	public void onDisconnect() {
+  @Override
+  public void onDisconnect() {
 
-		putEvent(ExchangeEventType.DISCONNECT, new Object());
-	}
+    putEvent(ExchangeEventType.DISCONNECT, new Object());
+  }
 }

@@ -7,14 +7,14 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xeiam.xchange.Exchange;
-import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.exceptions.ExchangeException;
 import com.xeiam.xchange.exceptions.NotAvailableFromExchangeException;
@@ -36,6 +36,9 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
   private String apikey;
   private OkCoinDigest signatureCreator;
   private final BlockingQueue<OkCoinWebSocketAPIRequest> newRequestsQueue = new LinkedBlockingQueue<OkCoinWebSocketAPIRequest>();
+  private Lock placeOrderLock = new ReentrantLock();
+  private Lock cancelOrderLock = new ReentrantLock();
+  private Lock orderInfoLock = new ReentrantLock();
 
   public OkCoinStreamingTradeService(Exchange exchange, ExchangeStreamingConfiguration exchangeStreamingConfiguration) {
     super(exchange, exchangeStreamingConfiguration, "TS");
@@ -44,7 +47,10 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
   }
 
   @Override
-  public synchronized String placeLimitOrder(LimitOrder limitOrder) {
+  public String placeLimitOrder(LimitOrder limitOrder) {
+
+    placeOrderLock.lock();
+
     while (true) {
       try {
         OkCoinPlaceLimitOrderRequest request = new OkCoinPlaceLimitOrderRequest(limitOrder, channelProvider, apikey,
@@ -52,14 +58,19 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
         newRequestsQueue.put(request);
         String orderId = request.get();
         knownOrders.put(orderId, limitOrder);
-        return orderId;
 
-      } catch (InterruptedException e) {
-        log.error("Unable to place order", e);
-        return null;
+        placeOrderLock.unlock();
+        return orderId;
       } catch (ExecutionException e) {
         log.warn(e.getCause().getMessage());
         continue;
+      } catch (InterruptedException e) {
+        log.error("Unable to place order", e);
+        placeOrderLock.unlock();
+        return null;
+      } catch (ExchangeException e) {
+        placeOrderLock.unlock();
+        throw e;
       }
     }
 
@@ -69,28 +80,29 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
   public void cancelOrder(String orderId)
       throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException {
 
+    cancelOrderLock.lock();
+
     while (true) {
-      Future<Boolean> res = cancelOrderNonBlocking(orderId, knownOrders.get(orderId).getCurrencyPair());
       try {
-        res.get();
+        OkCoinCancelOrderRequest request = new OkCoinCancelOrderRequest(orderId,
+            knownOrders.get(orderId).getCurrencyPair().toString().replace("/", "_").toLowerCase(), channelProvider,
+            apikey, signatureCreator);
+        newRequestsQueue.put(request);
+        request.get();
+
+        cancelOrderLock.unlock();
+        return;
       } catch (InterruptedException e) {
         log.error("Unable to cancel order", e);
+        cancelOrderLock.unlock();
+        return;
       } catch (ExecutionException e) {
         log.warn(e.getCause().getMessage());
         continue;
+      } catch (ExchangeException e) {
+        cancelOrderLock.unlock();
+        throw e;
       }
-    }
-  }
-
-  public Future<Boolean> cancelOrderNonBlocking(String orderId, CurrencyPair currencyPair) {
-    
-    try {
-      OkCoinCancelOrderRequest request = new OkCoinCancelOrderRequest(orderId,
-          currencyPair.toString().replace("/", "_").toLowerCase(), channelProvider, apikey, signatureCreator);
-      newRequestsQueue.put(request);
-      return request;
-    } catch (InterruptedException e) {
-      return null;
     }
   }
 
@@ -98,35 +110,31 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
   public LimitOrder getOrder(String orderId)
       throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException {
 
+    orderInfoLock.lock();
     while (true) {
-      Future<LimitOrder> res = getOrderNonBlocking(orderId, knownOrders.get(orderId).getCurrencyPair());
       try {
-        return res.get();
+        OkCoinGetOrderInfoRequest request = new OkCoinGetOrderInfoRequest(orderId,
+            knownOrders.get(orderId).getCurrencyPair().toString().replace("/", "_").toLowerCase(), channelProvider,
+            apikey, signatureCreator);
+        newRequestsQueue.put(request);
+        orderInfoLock.unlock();
+        return request.get();
       } catch (InterruptedException e) {
         log.error("Unable to cancel order", e);
+        orderInfoLock.unlock();
+        return null;
       } catch (ExecutionException e) {
         log.warn(e.getCause().getMessage());
         continue;
+      } catch (ExchangeException e) {
+        orderInfoLock.unlock();
+        throw e;
       }
-      return null;
     }
-  }
-
-  public Future<LimitOrder> getOrderNonBlocking(String orderId, CurrencyPair currencyPair) {
-    try {
-      OkCoinGetOrderInfoRequest request = new OkCoinGetOrderInfoRequest(orderId,
-          currencyPair.toString().replace("/", "_").toLowerCase(), channelProvider, apikey, signatureCreator);
-      newRequestsQueue.put(request);
-      return request;
-
-    } catch (InterruptedException e) {
-      return null;
-    }
-
   }
 
   private ConcurrentMap<String, LimitOrder> knownOrders = new ConcurrentHashMap<>();
-  private RequestConveyor requests = new RequestConveyor();
+  private RequestStore requests = new RequestStore();
   private Logger log = LoggerFactory.getLogger(this.getClass());
   private ExecutorService executor;
 
@@ -165,11 +173,10 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
 
             Object payload = event.getPayload();
             OkCoinWebSocketAPIRequest req;
-            Long orderId;
             switch (event.getEventType()) {
             case ORDER_ADDED:
               log.debug("Processed addition of new order {}", ((OkCoinTradeResult) payload).getOrderId());
-              req = requests.take(new RequestIdentifier(OkCoinPlaceLimitOrderRequest.DUMMY_ID, event.getEventType()));
+              req = requests.take(new RequestIdentifier(event.getEventType()));
               if (req != null)
                 req.set((OkCoinTradeResult) payload);
               else
@@ -177,8 +184,7 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
               break;
             case ORDER_CANCELED:
               log.debug("Processed cancellation for {}", ((OkCoinTradeResult) payload).getOrderId());
-              req = requests
-                  .take(new RequestIdentifier(((OkCoinTradeResult) payload).getOrderId(), event.getEventType()));
+              req = requests.take(new RequestIdentifier(event.getEventType()));
               if (req != null)
                 req.set(true);
               else
@@ -187,7 +193,7 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
             case USER_ORDER:
               LimitOrder order = OkCoinAdapters.adaptOrder(((OkCoinOrdersResult) payload).getOrders()[0]);
               log.debug(order.toString());
-              req = requests.take(new RequestIdentifier(Long.valueOf(order.getId()), event.getEventType()));
+              req = requests.take(new RequestIdentifier(event.getEventType()));
               if (req != null)
                 req.set(order);
               else
@@ -197,8 +203,7 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
               if (payload instanceof OkCoinPlaceOrderError) {
 
                 log.debug("Processed error for order placement");
-                req = requests
-                    .take(new RequestIdentifier(OkCoinPlaceLimitOrderRequest.DUMMY_ID, ExchangeEventType.ORDER_ADDED));
+                req = requests.take(new RequestIdentifier(ExchangeEventType.ORDER_ADDED));
                 if (req != null)
                   req.set(payload);
                 else
@@ -207,8 +212,7 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
               } else if (payload instanceof OkCoinCancelOrderError) {
 
                 log.debug("Processed error for {}", ((OkCoinCancelOrderError) payload).getOrderId());
-                orderId = ((OkCoinCancelOrderError) payload).getOrderId();
-                req = requests.take(new RequestIdentifier(orderId, ExchangeEventType.ORDER_CANCELED));
+                req = requests.take(new RequestIdentifier(ExchangeEventType.ORDER_CANCELED));
                 if (req != null)
                   req.set(false);
                 else
@@ -217,8 +221,7 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
               } else if (payload instanceof OkCoinGetOrderInfoError) {
 
                 log.debug("Processed error for {}", ((OkCoinGetOrderInfoError) payload).getOrderId());
-                orderId = ((OkCoinGetOrderInfoError) payload).getOrderId();
-                req = requests.take(new RequestIdentifier(orderId, ExchangeEventType.USER_ORDER));
+                req = requests.take(new RequestIdentifier(ExchangeEventType.USER_ORDER));
                 if (req != null)
                   req.set(null);
                 else
@@ -228,6 +231,7 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
               break;
             case DISCONNECT:
               log.warn("Disconnect event arrived!");
+              requests.broadcastDisconnection();
               break;
             default:
               log.debug("Unprocessed {} event: {}", event.getEventType(), event);

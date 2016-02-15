@@ -4,7 +4,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-class RequestConveyor {
+class RequestStore {
 
   synchronized void put(OkCoinWebSocketAPIRequest request) throws InterruptedException {
     
@@ -22,6 +22,15 @@ class RequestConveyor {
     if (requests.get(id).size() == 0)
       requests.remove(id);
     return request;
+  }
+  
+  synchronized void broadcastDisconnection() throws InterruptedException {
+    
+    for (RequestIdentifier id : requests.keySet()) {
+      while (requests.get(id).size()>0)
+       requests.get(id).take().setIOException();
+      requests.remove(id);
+    }
   }
 
   private ConcurrentMap<RequestIdentifier, ArrayBlockingQueue<OkCoinWebSocketAPIRequest>> requests = new ConcurrentHashMap<>();

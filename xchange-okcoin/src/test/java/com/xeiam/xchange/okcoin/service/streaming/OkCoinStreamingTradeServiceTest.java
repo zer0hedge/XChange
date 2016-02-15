@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import org.junit.After;
 import org.junit.Before;
@@ -145,8 +144,7 @@ public class OkCoinStreamingTradeServiceTest {
     String id = sut.placeLimitOrder(limitOrder);
 
     stubCancelOrderChannelSubscription(ExchangeEventType.ORDER_CANCELED, new OkCoinTradeResult(true, 0, 101));
-    Future<Boolean> r = sut.cancelOrderNonBlocking(id, CurrencyPair.BTC_USD);
-    assertThat(r.get()).isTrue();
+    sut.cancelOrder(id);
 
   }
 
@@ -159,10 +157,8 @@ public class OkCoinStreamingTradeServiceTest {
 
     String id = sut.placeLimitOrder(limitOrder);
 
-    Future<Boolean> r = sut.cancelOrderNonBlocking(id, CurrencyPair.BTC_USD);
-    sut.getMarketDataEventQueue().put(
-        new OkCoinExchangeEvent(ExchangeEventType.ERROR, new OkCoinCancelOrderError(false, 10009, Long.valueOf(id))));
-    r.get();
+    stubCancelOrderChannelSubscription(ExchangeEventType.ERROR, new OkCoinCancelOrderError(false, 10009, Long.valueOf(id)));
+    sut.cancelOrder(id);
 
   }
 
@@ -182,8 +178,7 @@ public class OkCoinStreamingTradeServiceTest {
 
     stubOrderInfoChannelSubscription(ExchangeEventType.USER_ORDER,
         new OkCoinOrdersResult(true, 0, new OkCoinOrder[] { serverOrder }));
-    Future<LimitOrder> orderInfo = sut.getOrderNonBlocking(id, CurrencyPair.BTC_USD);
-    LimitOrder response = orderInfo.get();
+    LimitOrder response = sut.getOrder(id);
 
     assertEquals(id, response.getId());
     assertEquals(limitOrder.getTradableAmount().divide(new BigDecimal("2")), response.getTradableAmount());
@@ -206,12 +201,8 @@ public class OkCoinStreamingTradeServiceTest {
     
     stubOrderInfoChannelSubscription(ExchangeEventType.USER_ORDER, new OkCoinOrdersResult(true, 0, new OkCoinOrder[] { serverOrder }));
     
-    Future<LimitOrder> orderInfo = sut.getOrderNonBlocking(id, CurrencyPair.BTC_USD);
-    Future<LimitOrder> orderInfo2 = sut.getOrderNonBlocking(id, CurrencyPair.BTC_USD);
-
-
-    LimitOrder response = orderInfo.get();
-    LimitOrder response2 = orderInfo2.get();
+    LimitOrder response = sut.getOrder(id);
+    LimitOrder response2 = sut.getOrder(id);
 
     assertThat(response).isEqualTo(response2);
 
@@ -233,17 +224,13 @@ public class OkCoinStreamingTradeServiceTest {
 
     stubOrderInfoChannelSubscription(ExchangeEventType.USER_ORDER,
         new OkCoinOrdersResult(true, 0, new OkCoinOrder[] { serverOrder }));
-    Future<LimitOrder> orderInfo = sut.getOrderNonBlocking(id, CurrencyPair.BTC_USD);
+    LimitOrder response = sut.getOrder(id);
 
     stubCancelOrderChannelSubscription(ExchangeEventType.ERROR,
         new OkCoinCancelOrderError(false, 10009, Long.valueOf(id)));
-    Future<Boolean> r = sut.cancelOrderNonBlocking(id, CurrencyPair.BTC_USD);
+    sut.cancelOrder(id);
 
-    r.get();
-
-    LimitOrder response = orderInfo.get();
     assertThat(response).isNotNull();
-    assertThat(r.get()).isTrue();
 
   }
 
@@ -259,9 +246,7 @@ public class OkCoinStreamingTradeServiceTest {
 
     stubOrderInfoChannelSubscription(ExchangeEventType.ERROR, new OkCoinGetOrderInfoError(false, 10002, Long.valueOf(id)));
     
-    Future<LimitOrder> orderInfo = sut.getOrderNonBlocking(id, CurrencyPair.BTC_USD);
-
-    orderInfo.get();
+    sut.getOrder(id);
 
   }
 

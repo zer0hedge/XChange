@@ -7,7 +7,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.io.IOUtils;
@@ -112,20 +111,17 @@ public class TradeAPIIntegration {
 		String orderId = sut.placeLimitOrder(limitOrder);
 		assertThat(orderId).isNotEqualTo("-1");
 		
-		Future<LimitOrder> orderInfo = sut.getOrderNonBlocking(orderId, currencyPair);
-		LimitOrder o = orderInfo.get();
+		LimitOrder o = sut.getOrder(orderId);
 		assertThat(o.getId()).isEqualTo(orderId);
 
-		Future<Boolean> isCancelled = sut.cancelOrderNonBlocking(orderId, currencyPair);
-		assertThat(isCancelled.get()).isTrue();
+		sut.cancelOrder(orderId);
 		
 	}
 
 
 	@Test(expected = ExchangeException.class)
 	public void shouldNotCancelNonexistentOrder() throws NotAvailableFromExchangeException, NotYetImplementedForExchangeException, ExchangeException, IOException, InterruptedException, ExecutionException, TimeoutException {
-		Future<Boolean> result = sut.cancelOrderNonBlocking("1", currencyPair);
-		result.get();
+		sut.cancelOrder("1");
 	}
 	
 	@Ignore
@@ -138,14 +134,10 @@ public class TradeAPIIntegration {
 		String orderId = sut.placeLimitOrder(limitOrder);
 		assertThat(orderId).isNotEqualTo("-1");
 		
-		Future<LimitOrder> orderInfo = sut.getOrderNonBlocking(orderId, currencyPair);
-		Future<LimitOrder> orderInfo2 = sut.getOrderNonBlocking(orderId, currencyPair);
-		assertThat(orderInfo.get().getId()).isEqualTo(orderId);
-		assertThat(orderInfo2.get().getId()).isEqualTo(orderId);
+		assertThat(sut.getOrder(orderId).getId()).isEqualTo(orderId);
+		assertThat(sut.getOrder(orderId).getId()).isEqualTo(orderId);
 		
-
-		Future<Boolean> isCancelled = sut.cancelOrderNonBlocking(orderId, currencyPair);
-		assertThat(isCancelled.get()).isTrue();
+		sut.cancelOrder(orderId);
 		
 	}
 
