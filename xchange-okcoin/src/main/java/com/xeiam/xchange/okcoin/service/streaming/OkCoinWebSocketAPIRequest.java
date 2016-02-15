@@ -43,7 +43,7 @@ abstract class OkCoinWebSocketAPIRequest {
     
     latch.await();
     if (IOException)
-      throw new ExecutionException(new java.io.IOException("Could not deliver message or receive response."));
+      throw new ExecutionException(new java.io.IOException("Could not deliver message or receive response"));
     return result;
   }
 
@@ -51,7 +51,7 @@ abstract class OkCoinWebSocketAPIRequest {
     
     latch.await(timeout, unit);
     if (IOException)
-      throw new ExecutionException(new java.io.IOException("Could not deliver message or receive response."));
+      throw new ExecutionException(new java.io.IOException("Could not deliver message or receive response"));
     return result;
   }
 

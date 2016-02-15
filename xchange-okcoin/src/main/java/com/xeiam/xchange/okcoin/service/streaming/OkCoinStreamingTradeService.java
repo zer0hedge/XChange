@@ -117,8 +117,9 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
             knownOrders.get(orderId).getCurrencyPair().toString().replace("/", "_").toLowerCase(), channelProvider,
             apikey, signatureCreator);
         newRequestsQueue.put(request);
+        LimitOrder response = request.get();
         orderInfoLock.unlock();
-        return request.get();
+        return response;
       } catch (InterruptedException e) {
         log.error("Unable to cancel order", e);
         orderInfoLock.unlock();
