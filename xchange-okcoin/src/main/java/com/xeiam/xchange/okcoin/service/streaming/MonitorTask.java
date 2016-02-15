@@ -1,16 +1,19 @@
 package com.xeiam.xchange.okcoin.service.streaming;
 
 import java.util.TimerTask;
-import java.util.concurrent.RejectedExecutionException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.netty.channel.ChannelFuture;
 
 class MonitorTask extends TimerTask {
-  private long lastResponseTime = System.currentTimeMillis();
-  private final int checkTime = 5000;
   private WebSocketBase client = null;
   private String name = "";
+  private Logger log = LoggerFactory.getLogger(this.getClass());
 
   void updateTime() {
-    lastResponseTime = System.currentTimeMillis();
+//    lastResponseTime = System.currentTimeMillis();
   }
 
   MonitorTask(WebSocketBase client) {
@@ -26,13 +29,17 @@ class MonitorTask extends TimerTask {
     if (!name.equals(""))
       Thread.currentThread().setName(name);
     
-    if (System.currentTimeMillis() - lastResponseTime > checkTime) {
-      client.reConnect();
-    }
+    ChannelFuture future = client.sendPing();
     try {
-      client.sendPing();
-    } catch (RejectedExecutionException reject) {
-      client.reConnect();
-    }
+		future.await();
+		if(!future.isSuccess() && future.cause() != null) {
+			log.debug("Ping send failed, reconnecting ... ", future.cause());
+			this.client.reConnect();
+		}
+		else 
+			log.debug("Ping sent");
+	} catch (InterruptedException e) {
+		Thread.currentThread().interrupt();
+	}
   }
 }

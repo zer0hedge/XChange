@@ -153,22 +153,22 @@ class WebSocketBase {
 	  group.shutdownGracefully();
   }
 
-  void sendMessage(String message) {
+  ChannelFuture sendMessage(String message) {
     try {
-      while (!isAlive) {
+      while (!isAlive ) {
         Thread.sleep(100);
       }
       log.debug("Sending message: " + message);
-      channel.writeAndFlush(new TextWebSocketFrame(message));
+      return channel.writeAndFlush(new TextWebSocketFrame(message));
       
     } catch (InterruptedException e) {
-
+    	return null;
     }
   }
 
-  void sendPing() {
+  ChannelFuture sendPing() {
     String dataMsg = "{'event':'ping'}";
-    this.sendMessage(dataMsg);
+    return this.sendMessage(dataMsg);
   }
 
   void reConnect() {
