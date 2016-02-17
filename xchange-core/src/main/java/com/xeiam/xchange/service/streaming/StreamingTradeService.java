@@ -1,4 +1,4 @@
-package com.xeiam.xchange.service.streaming.trade;
+package com.xeiam.xchange.service.streaming;
 
 import java.io.IOException;
 
@@ -6,7 +6,6 @@ import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.exceptions.ExchangeException;
 import com.xeiam.xchange.exceptions.NotAvailableFromExchangeException;
 import com.xeiam.xchange.exceptions.NotYetImplementedForExchangeException;
-import com.xeiam.xchange.service.streaming.StreamingExchangeService;
 
 /**
  * WebSocket/other-streaming-protocol based TradeService. Every method in the
