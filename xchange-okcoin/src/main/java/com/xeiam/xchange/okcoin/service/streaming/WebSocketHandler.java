@@ -16,17 +16,17 @@ import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.util.CharsetUtil;
 
-class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> {
-  private final Logger log = LoggerFactory.getLogger(WebSocketClientHandler.class);
+class WebSocketHandler extends SimpleChannelInboundHandler<Object> {
+  private final Logger log = LoggerFactory.getLogger(WebSocketHandler.class);
 
   private final WebSocketClientHandshaker handshaker;
   private ChannelPromise handshakeFuture;
-  private MonitorTask monitor;
-  private WebSocketService service;
+  private ConnectionMonitor monitor;
+  private OkCoinEventParser service;
 
-  WebSocketClientHandler(WebSocketClientHandshaker handshaker, WebSocketService service, MonitorTask monitor) {
+  WebSocketHandler(WebSocketClientHandshaker handshaker, OkCoinEventParser service2, ConnectionMonitor monitor) {
     this.handshaker = handshaker;
-    this.service = service;
+    this.service = service2;
     this.monitor = monitor;
   }
 

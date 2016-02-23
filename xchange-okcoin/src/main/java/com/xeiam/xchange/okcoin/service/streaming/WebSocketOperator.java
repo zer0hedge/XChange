@@ -33,12 +33,12 @@ import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.ssl.SslContext;
 
-class WebSocketBase {
-  private static final Logger log = LoggerFactory.getLogger(WebSocketBase.class);
+class WebSocketOperator {
+  private static final Logger log = LoggerFactory.getLogger(WebSocketOperator.class);
 
-  private WebSocketService service = null;
+  private OkCoinEventParser service = null;
   private Timer timerTask = null;
-  private MonitorTask monitor = null;
+  private ConnectionMonitor monitor = null;
   private EventLoopGroup group = null;
   private Bootstrap bootstrap = null;
   Channel channel = null;
@@ -50,7 +50,7 @@ class WebSocketBase {
 
   private String name = "";
 
-  WebSocketBase(String url, WebSocketService service) {
+  WebSocketOperator(String url, OkCoinEventParser service) {
     this.url = url;
     this.service = service;
   }
@@ -65,9 +65,9 @@ class WebSocketBase {
       return;
     }
 
-    monitor = new MonitorTask(this);
-    monitor.setName(name+"monitor");
-    
+    monitor = new ConnectionMonitor(this);
+    monitor.setName(name + "monitor");
+
     this.connect();
 
     timerTask = new Timer();
@@ -119,7 +119,7 @@ class WebSocketBase {
       group = new NioEventLoopGroup(1);
       bootstrap = new Bootstrap();
       final SslContext sslCtx = SslContext.newClientContext();
-      final WebSocketClientHandler handler = new WebSocketClientHandler(WebSocketClientHandshakerFactory.newHandshaker(
+      final WebSocketHandler handler = new WebSocketHandler(WebSocketClientHandshakerFactory.newHandshaker(
           uri, WebSocketVersion.V13, null, false, new DefaultHttpHeaders(), Integer.MAX_VALUE), service, monitor);
 
       bootstrap.group(group).option(ChannelOption.TCP_NODELAY, true).channel(NioSocketChannel.class)
@@ -148,9 +148,9 @@ class WebSocketBase {
       this.setStatus(false);
     }
   }
-  
+
   void shutdown() {
-	  group.shutdownGracefully();
+    group.shutdownGracefully();
   }
 
   void sendMessage(String message) {
@@ -160,7 +160,7 @@ class WebSocketBase {
       }
       log.debug("Sending message: " + message);
       channel.writeAndFlush(new TextWebSocketFrame(message));
-      
+
     } catch (InterruptedException e) {
 
     }
@@ -173,23 +173,25 @@ class WebSocketBase {
 
   void reConnect() {
     isAlive = false;
+    while (!Thread.interrupted())
+      try {
+        log.debug("Reconnecting");
+        this.group.shutdownGracefully();
+        this.connect();
 
-    try {
-      log.debug("Reconnecting");
-      this.group.shutdownGracefully();
-      this.connect();
-
-      if (future.isSuccess()) {
-        this.sendPing();
-        Iterator<String> it = subscribedChannels.iterator();
-        while (it.hasNext()) {
-          String channel = it.next();
-          this.addChannel(channel);
+        if (future.isSuccess()) {
+          this.sendPing();
+          Iterator<String> it = subscribedChannels.iterator();
+          while (it.hasNext()) {
+            String channel = it.next();
+            this.addChannel(channel);
+          }
+          return;
         }
+      } catch (Exception e) {
+        log.warn(e.getMessage());
+        continue;
       }
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
   }
 
   public void setName(String name) {

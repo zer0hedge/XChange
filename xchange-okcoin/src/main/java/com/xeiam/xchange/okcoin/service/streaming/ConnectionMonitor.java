@@ -3,17 +3,17 @@ package com.xeiam.xchange.okcoin.service.streaming;
 import java.util.TimerTask;
 import java.util.concurrent.RejectedExecutionException;
 
-class MonitorTask extends TimerTask {
+class ConnectionMonitor extends TimerTask {
   private long lastResponseTime = System.currentTimeMillis();
   private final int checkTime = 5000;
-  private WebSocketBase client = null;
+  private WebSocketOperator client = null;
   private String name = "";
 
   void updateTime() {
     lastResponseTime = System.currentTimeMillis();
   }
 
-  MonitorTask(WebSocketBase client) {
+  ConnectionMonitor(WebSocketOperator client) {
     this.client = client;
   }
 

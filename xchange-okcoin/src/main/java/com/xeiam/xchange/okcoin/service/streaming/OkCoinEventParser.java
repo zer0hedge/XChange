@@ -29,23 +29,22 @@ import com.xeiam.xchange.okcoin.dto.trade.OkCoinTradeResult;
 import com.xeiam.xchange.service.streaming.ExchangeEvent;
 import com.xeiam.xchange.service.streaming.ExchangeEventType;
 
-class OkCoinWebSocketService implements WebSocketService {
+class OkCoinEventParser {
   private final ObjectMapper mapper = new ObjectMapper();
   private final JsonFactory jsonFactory = new JsonFactory();
   private final BlockingQueue<ExchangeEvent> eventQueue;
   private final CurrencyPair[] currencyPairs;
   private final ChannelProvider channelProvider;
 
-  private final Logger log = LoggerFactory.getLogger(OkCoinWebSocketService.class);
+  private final Logger log = LoggerFactory.getLogger(OkCoinEventParser.class);
 
-  OkCoinWebSocketService(BlockingQueue<ExchangeEvent> eventQueue, ChannelProvider channelProvider,
+  OkCoinEventParser(BlockingQueue<ExchangeEvent> eventQueue, ChannelProvider channelProvider,
       CurrencyPair[] currencyPairs) {
     this.eventQueue = eventQueue;
     this.channelProvider = channelProvider;
     this.currencyPairs = currencyPairs;
   }
 
-  @Override
   public void onReceive(String msg) throws JsonParseException, JsonMappingException, IOException {
     log.debug("Received message: " + msg);
     JsonParser parser = jsonFactory.createParser(msg);
@@ -160,7 +159,6 @@ class OkCoinWebSocketService implements WebSocketService {
     }
   }
 
-  @Override
   public void onDisconnect() {
 
     putEvent(ExchangeEventType.DISCONNECT, new Object());

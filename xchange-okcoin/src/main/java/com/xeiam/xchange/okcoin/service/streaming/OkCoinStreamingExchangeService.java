@@ -20,7 +20,7 @@ import com.xeiam.xchange.service.streaming.StreamingExchangeService;
  */
 @Deprecated
 public class OkCoinStreamingExchangeService implements StreamingExchangeService {
-  private final WebSocketBase socketBase;
+  private final WebSocketOperator socketBase;
   private final BlockingQueue<ExchangeEvent> eventQueue = new LinkedBlockingQueue<ExchangeEvent>();
   private final OkCoinExchangeStreamingConfiguration exchangeStreamingConfiguration;
   private final ChannelProvider channelProvider;
@@ -34,9 +34,9 @@ public class OkCoinStreamingExchangeService implements StreamingExchangeService 
     channelProvider = useFutures ? new FuturesChannelProvider(OkCoinExchange.futuresContractOfConfig(exchangeSpecification))
         : new SpotChannelProvider(exchangeSpecification);
 
-    WebSocketService socketService = new OkCoinWebSocketService(eventQueue, channelProvider,
+    OkCoinEventParser socketService = new OkCoinEventParser(eventQueue, channelProvider,
         this.exchangeStreamingConfiguration.getMarketDataCurrencyPairs());
-    socketBase = new WebSocketBase(sslUri, socketService);
+    socketBase = new WebSocketOperator(sslUri, socketService);
   }
 
   @Override

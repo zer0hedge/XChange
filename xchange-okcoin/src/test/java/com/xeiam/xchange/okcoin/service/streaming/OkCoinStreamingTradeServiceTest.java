@@ -38,7 +38,7 @@ import com.xeiam.xchange.service.streaming.ExchangeEventType;
 public class OkCoinStreamingTradeServiceTest {
 
   public OkCoinStreamingTradeService sut;
-  private WebSocketBase socketBase;
+  private WebSocketOperator socketBase;
 
   LimitOrder mockLimitOrder() {
     LimitOrder limitOrder = mock(LimitOrder.class);
@@ -59,7 +59,7 @@ public class OkCoinStreamingTradeServiceTest {
     when(okcoin.getExchangeSpecification()).thenReturn(exchangeSpecification);
     okcoin.applySpecification(exchangeSpecification);
     OkCoinStreamingConfiguration config = mock(OkCoinStreamingConfiguration.class);
-    socketBase = mock(WebSocketBase.class);
+    socketBase = mock(WebSocketOperator.class);
 
     sut = new OkCoinStreamingTradeService(okcoin, config);
     sut.setSocketBase(socketBase);

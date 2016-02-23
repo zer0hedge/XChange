@@ -5,6 +5,7 @@ import java.io.IOException;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
+@Deprecated
 interface WebSocketService {
   void onReceive(String msg) throws JsonParseException, JsonMappingException, IOException;
 

@@ -13,7 +13,7 @@ import com.xeiam.xchange.service.streaming.ExchangeStreamingConfiguration;
 import com.xeiam.xchange.service.streaming.StreamingExchangeService;
 
 class OkCoinBaseStreamingService implements StreamingExchangeService {
-  private WebSocketBase socketBase;
+  private WebSocketOperator socketBase;
   protected final ChannelProvider channelProvider;
   private final BlockingQueue<ExchangeEvent> marketDataEventQueue = new LinkedBlockingQueue<ExchangeEvent>();
 
@@ -29,11 +29,11 @@ class OkCoinBaseStreamingService implements StreamingExchangeService {
 
     channelProvider = useFutures ? new FuturesChannelProvider(OkCoinExchange.futuresContractOfConfig(exchangeSpecification))
         : new SpotChannelProvider(exchangeSpecification);
-    WebSocketService socketService = new OkCoinWebSocketService(marketDataEventQueue,
+    OkCoinEventParser socketService = new OkCoinEventParser(marketDataEventQueue,
         channelProvider,
         this.exchangeStreamingConfiguration.getMarketDataCurrencyPairs());
     
-    socketBase = new WebSocketBase(sslUri, socketService);
+    socketBase = new WebSocketOperator(sslUri, socketService);
     socketBase.setName(name);
   }
 
@@ -69,11 +69,11 @@ class OkCoinBaseStreamingService implements StreamingExchangeService {
     return READYSTATE.OPEN;
   }
 
-  WebSocketBase getSocketBase() {
+  WebSocketOperator getSocketBase() {
     return socketBase;
   }
 
-  void setSocketBase(WebSocketBase socketBase) {
+  void setSocketBase(WebSocketOperator socketBase) {
     this.socketBase = socketBase;
   }
 

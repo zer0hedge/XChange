@@ -20,14 +20,14 @@ import com.xeiam.xchange.service.streaming.ExchangeEvent;
 
 public class OkCoinWebSocketServiceTest {
 
-  OkCoinWebSocketService sut;
+  OkCoinEventParser sut;
   BlockingQueue<ExchangeEvent> eventQueue = new ArrayBlockingQueue<>(10);
   private SpotChannelProvider channelProvider;
 
   @Before
   public void setUp() {
     channelProvider = mock(SpotChannelProvider.class);
-    sut = new OkCoinWebSocketService(eventQueue, channelProvider, new CurrencyPair[] { CurrencyPair.BTC_USD });
+    sut = new OkCoinEventParser(eventQueue, channelProvider, new CurrencyPair[] { CurrencyPair.BTC_USD });
   }
 
   @Test

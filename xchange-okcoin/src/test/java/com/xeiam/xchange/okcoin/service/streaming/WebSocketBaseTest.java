@@ -22,7 +22,7 @@ public class WebSocketBaseTest {
   @Test
   public void testAddChannelWithParameters() {
 
-    WebSocketBase sut = new WebSocketBase("", null);
+    WebSocketOperator sut = new WebSocketOperator("", null);
     sut.channel = mock(Channel.class);
     when(sut.channel.writeAndFlush(anyObject())).thenReturn(mock(ChannelFuture.class));
     sut.setStatus(true);
@@ -35,12 +35,12 @@ public class WebSocketBaseTest {
     String sign = signatureCreator.digestNameValueParamMap(new ArrayList<>(params.entrySet()));
     params.put("sign", sign);
 
-    WebSocketBase spy = Mockito.spy(sut);
+    WebSocketOperator spy = Mockito.spy(sut);
     spy.addOneTimeChannel("ok_spotusd_trade", params);
     verify(spy).sendMessage("{'event':'addChannel','channel':'ok_spotusd_trade'," + "'parameters':"
         + "{'api_key':'123456'," + "'price':'100500'," + "'sign':'F6DCE90FF040A5A8327AD70936D93EF9'" + "}}");
 
   }
 
-  WebSocketBase sut;
+  WebSocketOperator sut;
 }
