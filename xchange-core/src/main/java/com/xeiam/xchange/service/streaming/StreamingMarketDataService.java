@@ -1,7 +1,6 @@
-package com.xeiam.xchange.service.streaming.marketdata;
+package com.xeiam.xchange.service.streaming;
 
 import com.xeiam.xchange.currency.CurrencyPair;
-import com.xeiam.xchange.service.streaming.StreamingExchangeService;
 
 public interface StreamingMarketDataService extends StreamingExchangeService {
 

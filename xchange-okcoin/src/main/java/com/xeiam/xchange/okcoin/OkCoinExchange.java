@@ -11,8 +11,8 @@ import com.xeiam.xchange.okcoin.service.polling.OkCoinTradeService;
 import com.xeiam.xchange.okcoin.service.streaming.OkCoinStreamingMarketDataService;
 import com.xeiam.xchange.okcoin.service.streaming.OkCoinStreamingTradeService;
 import com.xeiam.xchange.service.streaming.ExchangeStreamingConfiguration;
-import com.xeiam.xchange.service.streaming.marketdata.StreamingMarketDataService;
-import com.xeiam.xchange.service.streaming.trade.StreamingTradeService;
+import com.xeiam.xchange.service.streaming.StreamingMarketDataService;
+import com.xeiam.xchange.service.streaming.StreamingTradeService;
 
 import si.mazi.rescu.SynchronizedValueFactory;
 

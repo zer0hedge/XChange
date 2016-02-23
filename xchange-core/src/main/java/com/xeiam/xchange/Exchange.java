@@ -9,8 +9,8 @@ import com.xeiam.xchange.service.polling.marketdata.PollingMarketDataService;
 import com.xeiam.xchange.service.polling.trade.PollingTradeService;
 import com.xeiam.xchange.service.streaming.ExchangeStreamingConfiguration;
 import com.xeiam.xchange.service.streaming.StreamingExchangeService;
-import com.xeiam.xchange.service.streaming.marketdata.StreamingMarketDataService;
-import com.xeiam.xchange.service.streaming.trade.StreamingTradeService;
+import com.xeiam.xchange.service.streaming.StreamingMarketDataService;
+import com.xeiam.xchange.service.streaming.StreamingTradeService;
 
 import si.mazi.rescu.SynchronizedValueFactory;
 

@@ -19,7 +19,7 @@ import com.xeiam.xchange.service.polling.marketdata.PollingMarketDataService;
 import com.xeiam.xchange.service.polling.trade.PollingTradeService;
 import com.xeiam.xchange.service.streaming.ExchangeStreamingConfiguration;
 import com.xeiam.xchange.service.streaming.StreamingExchangeService;
-import com.xeiam.xchange.service.streaming.marketdata.StreamingMarketDataService;
+import com.xeiam.xchange.service.streaming.StreamingMarketDataService;
 
 public abstract class BaseExchange implements Exchange {
 

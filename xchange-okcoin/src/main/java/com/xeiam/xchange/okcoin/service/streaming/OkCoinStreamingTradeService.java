@@ -29,7 +29,7 @@ import com.xeiam.xchange.okcoin.dto.trade.OkCoinTradeResult;
 import com.xeiam.xchange.service.streaming.ExchangeEvent;
 import com.xeiam.xchange.service.streaming.ExchangeEventType;
 import com.xeiam.xchange.service.streaming.ExchangeStreamingConfiguration;
-import com.xeiam.xchange.service.streaming.trade.StreamingTradeService;
+import com.xeiam.xchange.service.streaming.StreamingTradeService;
 
 public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService implements StreamingTradeService {
 

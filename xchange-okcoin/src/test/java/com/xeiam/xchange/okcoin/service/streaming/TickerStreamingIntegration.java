@@ -14,7 +14,7 @@ import com.xeiam.xchange.dto.marketdata.Ticker;
 import com.xeiam.xchange.okcoin.OkCoinExchange;
 import com.xeiam.xchange.service.streaming.ExchangeEvent;
 import com.xeiam.xchange.service.streaming.ExchangeEventType;
-import com.xeiam.xchange.service.streaming.marketdata.StreamingMarketDataService;
+import com.xeiam.xchange.service.streaming.StreamingMarketDataService;
 
 /**
  * @author timmolter

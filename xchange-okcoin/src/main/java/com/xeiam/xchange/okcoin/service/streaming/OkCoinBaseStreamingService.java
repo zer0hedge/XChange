@@ -15,7 +15,7 @@ import com.xeiam.xchange.service.streaming.StreamingExchangeService;
 class OkCoinBaseStreamingService implements StreamingExchangeService {
   private WebSocketOperator socketBase;
   protected final ChannelProvider channelProvider;
-  private final BlockingQueue<ExchangeEvent> marketDataEventQueue = new LinkedBlockingQueue<ExchangeEvent>();
+  private final BlockingQueue<ExchangeEvent> eventQueue = new LinkedBlockingQueue<ExchangeEvent>();
 
   private final OkCoinStreamingConfiguration exchangeStreamingConfiguration;
 
@@ -29,7 +29,7 @@ class OkCoinBaseStreamingService implements StreamingExchangeService {
 
     channelProvider = useFutures ? new FuturesChannelProvider(OkCoinExchange.futuresContractOfConfig(exchangeSpecification))
         : new SpotChannelProvider(exchangeSpecification);
-    OkCoinEventParser socketService = new OkCoinEventParser(marketDataEventQueue,
+    OkCoinEventParser socketService = new OkCoinEventParser(eventQueue,
         channelProvider,
         this.exchangeStreamingConfiguration.getMarketDataCurrencyPairs());
     
@@ -49,7 +49,7 @@ class OkCoinBaseStreamingService implements StreamingExchangeService {
 
   @Override
   public ExchangeEvent getNextEvent() throws InterruptedException {
-    return marketDataEventQueue.take();
+    return eventQueue.take();
   }
 
   /**
@@ -57,7 +57,7 @@ class OkCoinBaseStreamingService implements StreamingExchangeService {
    */
   @Override
   public int countEventsAvailable() {
-    return marketDataEventQueue.size();
+    return eventQueue.size();
   }
 
   @Override
@@ -78,6 +78,6 @@ class OkCoinBaseStreamingService implements StreamingExchangeService {
   }
 
   BlockingQueue<ExchangeEvent> getMarketDataEventQueue() {
-    return marketDataEventQueue;
+    return eventQueue;
   }
 }
