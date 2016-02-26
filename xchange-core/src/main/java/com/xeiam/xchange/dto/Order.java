@@ -27,7 +27,7 @@ public abstract class Order {
   };
   
   public enum DefaultOrderFlags implements IOrderFlags {
-    CANCELLED
+    CANCELLED, CANCEL_PENDING
   }
 
   /**
@@ -129,7 +129,7 @@ public abstract class Order {
   public String toString() {
 
     return "Order [type=" + type + ", tradableAmount=" + tradableAmount + ", currencyPair=" + currencyPair + ", id=" + id + ", timestamp=" + timestamp
-        + "]";
+        + ", flags=" + flags + "]";
   }
 
   @Override
