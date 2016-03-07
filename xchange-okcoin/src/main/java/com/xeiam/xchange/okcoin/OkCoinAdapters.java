@@ -234,6 +234,8 @@ public final class OkCoinAdapters {
     switch (status) {
     case -1:
       return Order.DefaultOrderFlags.CANCELLED;
+    case 4:
+      return Order.DefaultOrderFlags.CANCEL_PENDING;
     default:
       return null;
     }
