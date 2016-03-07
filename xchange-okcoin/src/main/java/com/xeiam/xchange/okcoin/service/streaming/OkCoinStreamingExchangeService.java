@@ -45,7 +45,7 @@ public class OkCoinStreamingExchangeService implements StreamingExchangeService 
 
     for (CurrencyPair currencyPair : exchangeStreamingConfiguration.getMarketDataCurrencyPairs()) {
       socketBase.addChannel(channelProvider.getTicker(currencyPair));
-      socketBase.addChannel(channelProvider.getDepth(currencyPair));
+      socketBase.addChannel(channelProvider.getDepth20(currencyPair));
       socketBase.addChannel(channelProvider.getTrades(currencyPair));
     }
   }

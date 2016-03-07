@@ -10,22 +10,22 @@ class SpotChannelProvider implements ChannelProvider {
   }
 
   private static String pairToString(CurrencyPair currencyPair) {
-    return currencyPair.base.getCurrencyCode().toLowerCase() + currencyPair.counter.getCurrencyCode().toLowerCase();
+    return currencyPair.counter.getCurrencyCode().toLowerCase() +"_"+ currencyPair.base.getCurrencyCode().toLowerCase();
   }
 
   @Override
   public String getTicker(CurrencyPair currencyPair) {
-    return "ok_" + pairToString(currencyPair) + "_ticker";
+    return "ok_sub_spot" + pairToString(currencyPair) + "_ticker";
   }
 
   @Override
-  public String getDepth(CurrencyPair currencyPair) {
-    return "ok_" + pairToString(currencyPair) + "_depth";
+  public String getDepth20(CurrencyPair currencyPair) {
+    return "ok_sub_spot" + pairToString(currencyPair) + "_depth_20";
   }
 
   @Override
   public String getTrades(CurrencyPair currencyPair) {
-    return "ok_" + pairToString(currencyPair) + "_trades_v1";
+    return "ok_sub_spot" + pairToString(currencyPair) + "_trades";
   }
 
   @Override

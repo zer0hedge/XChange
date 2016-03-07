@@ -68,7 +68,7 @@ class OkCoinEventParser {
   private void parseExchangeEvent(JsonNode node, CurrencyPair currencyPair)
       throws JsonParseException, JsonMappingException, IOException {
 
-    if (node.get("channel").textValue().equals(channelProvider.getDepth(currencyPair))) {
+    if (node.get("channel").textValue().equals(channelProvider.getDepth20(currencyPair))) {
       parseDepth(node, currencyPair);
 
     } else if (node.get("channel").textValue().equals(channelProvider.getTrades(currencyPair))) {
@@ -137,9 +137,10 @@ class OkCoinEventParser {
 
   private void parseDepth(JsonNode node, CurrencyPair currencyPair)
       throws IOException, JsonParseException, JsonMappingException {
-
-    OkCoinDepth depth = mapper.readValue(node.get("data").toString(), OkCoinStreamingDepth.class);
-    putEvent(ExchangeEventType.DEPTH, OkCoinAdapters.adaptOrderBook(depth, currencyPair));
+    if (node.get("data") != null) {
+      OkCoinDepth depth = mapper.readValue(node.get("data").toString(), OkCoinStreamingDepth.class);
+      putEvent(ExchangeEventType.DEPTH, OkCoinAdapters.adaptOrderBook(depth, currencyPair));
+    }
   }
 
   private void parseTrades(JsonNode node, CurrencyPair currencyPair) {

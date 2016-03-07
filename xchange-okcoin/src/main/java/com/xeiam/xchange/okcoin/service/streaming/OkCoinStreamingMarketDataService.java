@@ -17,7 +17,7 @@ public class OkCoinStreamingMarketDataService extends OkCoinBaseStreamingService
   }
 
   public void addDepthChannel(CurrencyPair currencyPair) {
-    getSocketBase().addChannel(channelProvider.getDepth(currencyPair));
+    getSocketBase().addChannel(channelProvider.getDepth20(currencyPair));
   }
 
   public void addTradesChannel(CurrencyPair currencyPair) {

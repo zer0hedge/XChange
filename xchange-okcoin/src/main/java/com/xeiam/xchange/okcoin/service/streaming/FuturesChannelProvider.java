@@ -16,17 +16,17 @@ class FuturesChannelProvider implements ChannelProvider {
 
   @Override
   public String getTicker(CurrencyPair currencyPair) {
-    return "ok_" + pairToString(currencyPair) + "_future_ticker_" + contractName;
+    return "ok_sub_future" + pairToString(currencyPair) + "_ticker_" + contractName;
   }
 
   @Override
-  public String getDepth(CurrencyPair currencyPair) {
-    return "ok_" + pairToString(currencyPair) + "_future_depth_" + contractName;
+  public String getDepth20(CurrencyPair currencyPair) {
+    return "ok_sub_future" + pairToString(currencyPair) + "_depth_" + contractName+"_20";
   }
 
   @Override
   public String getTrades(CurrencyPair currencyPair) {
-    return "ok_" + pairToString(currencyPair) + "_future_trade_v1_" + contractName;
+    return "ok_sub_future" + pairToString(currencyPair) + "_trade_" + contractName;
   }
   
   @Override

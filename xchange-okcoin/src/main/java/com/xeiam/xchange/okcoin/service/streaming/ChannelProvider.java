@@ -7,7 +7,7 @@ interface ChannelProvider {
   
   String getTicker(CurrencyPair currencyPair);
 
-  String getDepth(CurrencyPair currencyPair);
+  String getDepth20(CurrencyPair currencyPair);
 
   String getTrades(CurrencyPair currencyPair);
   
