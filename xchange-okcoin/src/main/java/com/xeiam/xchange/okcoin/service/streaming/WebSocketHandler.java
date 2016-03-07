@@ -22,11 +22,14 @@ class WebSocketHandler extends SimpleChannelInboundHandler<Object> {
   private final WebSocketClientHandshaker handshaker;
   private ChannelPromise handshakeFuture;
   private ConnectionMonitor monitor;
-  private OkCoinEventParser service;
+  private OkCoinEventParser eventParser;
 
-  WebSocketHandler(WebSocketClientHandshaker handshaker, OkCoinEventParser service2, ConnectionMonitor monitor) {
+  private WebSocketOperator webSocketOperator;
+
+  WebSocketHandler(WebSocketOperator webSocketOperator, WebSocketClientHandshaker handshaker, OkCoinEventParser service2, ConnectionMonitor monitor) {
+    this.webSocketOperator = webSocketOperator;
     this.handshaker = handshaker;
-    this.service = service2;
+    this.eventParser = service2;
     this.monitor = monitor;
   }
 
@@ -43,14 +46,14 @@ class WebSocketHandler extends SimpleChannelInboundHandler<Object> {
   public void channelActive(ChannelHandlerContext ctx) {
     handshaker.handshake(ctx.channel());
   }
-
+  
   @Override
   public void channelInactive(ChannelHandlerContext ctx) {
     log.warn("WebSocket Client disconnected!");
-    service.onDisconnect();
+    webSocketOperator.setAlive(false);
+    eventParser.onDisconnect();
   }
 
-  @SuppressWarnings("deprecation")
   @Override
   public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
     Channel ch = ctx.channel();
@@ -64,7 +67,7 @@ class WebSocketHandler extends SimpleChannelInboundHandler<Object> {
 
     if (msg instanceof FullHttpResponse) {
       FullHttpResponse response = (FullHttpResponse) msg;
-      throw new IllegalStateException("Unexpected FullHttpResponse (getStatus=" + response.getStatus() + ", content="
+      throw new IllegalStateException("Unexpected FullHttpResponse (getStatus=" + response.status() + ", content="
           + response.content().toString(CharsetUtil.UTF_8) + ')');
     }
 
@@ -72,7 +75,7 @@ class WebSocketHandler extends SimpleChannelInboundHandler<Object> {
     if (frame instanceof TextWebSocketFrame) {
 
       TextWebSocketFrame textFrame = (TextWebSocketFrame) frame;
-      service.onReceive(textFrame.text());
+      eventParser.onReceive(textFrame.text());
 
     } else if (frame instanceof PongWebSocketFrame) {
       log.debug("WebSocket Client received pong");

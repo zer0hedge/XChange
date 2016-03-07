@@ -1,11 +1,16 @@
 package com.xeiam.xchange.okcoin.service.streaming;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeoutException;
+
+import javax.net.ssl.SSLException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +22,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
@@ -68,13 +72,20 @@ class WebSocketOperator {
     monitor = new ConnectionMonitor(this);
     monitor.setName(name + "monitor");
 
-    this.connect();
+    while (!Thread.interrupted())
+      try {
+        this.connect();
+        break;
+      } catch (TimeoutException e) {
+        log.warn(e.getMessage());
+        continue;
+      }
 
     timerTask = new Timer();
     timerTask.schedule(monitor, 3000, 1000);
   }
 
-  void setStatus(boolean flag) {
+  void setAlive(boolean flag) {
     this.isAlive = flag;
   }
 
@@ -112,15 +123,15 @@ class WebSocketOperator {
     subscribedChannels.remove(channel);
   }
 
-  void connect() {
+  void connect() throws TimeoutException {
     try {
-      final URI uri = new URI(url);
 
       group = new NioEventLoopGroup(1);
       bootstrap = new Bootstrap();
       final SslContext sslCtx = SslContext.newClientContext();
-      final WebSocketHandler handler = new WebSocketHandler(WebSocketClientHandshakerFactory.newHandshaker(
-          uri, WebSocketVersion.V13, null, false, new DefaultHttpHeaders(), Integer.MAX_VALUE), service, monitor);
+      final URI uri = new URI(url);
+      final WebSocketHandler handler = new WebSocketHandler(this, WebSocketClientHandshakerFactory.newHandshaker(uri,
+          WebSocketVersion.V13, null, false, new DefaultHttpHeaders(), Integer.MAX_VALUE), service, monitor);
 
       bootstrap.group(group).option(ChannelOption.TCP_NODELAY, true).channel(NioSocketChannel.class)
           .handler(new ChannelInitializer<SocketChannel>() {
@@ -134,23 +145,23 @@ class WebSocketOperator {
           });
 
       future = bootstrap.connect(uri.getHost(), uri.getPort());
-      future.addListener(new ChannelFutureListener() {
-        public void operationComplete(final ChannelFuture future) throws Exception {
+
+      log.debug("Waiting for channel future to finish...");
+      if (future.await(20000)) {
+        channel = future.sync().channel();
+        log.debug("Waiting for handshake...");
+        if (handler.handshakeFuture().await(20000)) {
+          Thread.sleep(1000);
+          this.setAlive(true);
         }
-      });
-      channel = future.sync().channel();
-      handler.handshakeFuture().sync();
-      this.setStatus(true);
+        else
+          throw new TimeoutException("Handshake timed out");
+      } else
+        throw new TimeoutException("Connection timed out");
 
-    } catch (Exception e) {
-      log.info("WebSocketClient start error ", e);
-      group.shutdownGracefully();
-      this.setStatus(false);
+    } catch (URISyntaxException | SSLException | InterruptedException e) {
+      log.warn(e.getMessage());
     }
-  }
-
-  void shutdown() {
-    group.shutdownGracefully();
   }
 
   void sendMessage(String message) {
@@ -158,6 +169,7 @@ class WebSocketOperator {
       while (!isAlive) {
         Thread.sleep(100);
       }
+      
       log.debug("Sending message: " + message);
       channel.writeAndFlush(new TextWebSocketFrame(message));
 
@@ -167,28 +179,35 @@ class WebSocketOperator {
   }
 
   void sendPing() {
-    String dataMsg = "{'event':'ping'}";
-    this.sendMessage(dataMsg);
+    if (!isAlive)
+      throw new RejectedExecutionException("WebSocket is not alive!");
+    String message = "{'event':'ping'}";
+    log.debug("Sending ping: " + message);
+    channel.writeAndFlush(new TextWebSocketFrame(message));
   }
 
-  void reConnect() {
-    isAlive = false;
+  void shutdown() {
+    log.debug("Shutting down...");
+    group.shutdownGracefully();
+  }
+
+  void reconnect() {
     while (!Thread.interrupted())
       try {
         log.debug("Reconnecting");
-        this.group.shutdownGracefully();
-        this.connect();
+        shutdown();
+        connect();
 
         if (future.isSuccess()) {
-          this.sendPing();
+
           Iterator<String> it = subscribedChannels.iterator();
           while (it.hasNext()) {
             String channel = it.next();
-            this.addChannel(channel);
+            addChannel(channel);
           }
           return;
         }
-      } catch (Exception e) {
+      } catch (TimeoutException e) {
         log.warn(e.getMessage());
         continue;
       }
