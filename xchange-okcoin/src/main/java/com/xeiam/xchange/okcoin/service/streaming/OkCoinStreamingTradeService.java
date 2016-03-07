@@ -176,57 +176,23 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
             OkCoinWebSocketAPIRequest req;
             switch (event.getEventType()) {
             case ORDER_ADDED:
-              log.debug("Processed addition of new order {}", ((OkCoinTradeResult) payload).getOrderId());
-              req = requests.take(new RequestIdentifier(event.getEventType()));
-              if (req != null)
-                req.set((OkCoinTradeResult) payload);
-              else
-                log.error("Unexpected {} event: {}", event.getEventType(), event);
+              requests.processResponse(event, new RequestIdentifier(event.getEventType()), (OkCoinTradeResult) payload);
               break;
             case ORDER_CANCELED:
-              log.debug("Processed cancellation for {}", ((OkCoinTradeResult) payload).getOrderId());
-              req = requests.take(new RequestIdentifier(event.getEventType()));
-              if (req != null)
-                req.set(true);
-              else
-                log.error("Unexpected {} event: {}", event.getEventType(), event);
+              requests.processResponse(event, new RequestIdentifier(event.getEventType()), true);
               break;
             case USER_ORDER:
               LimitOrder order = OkCoinAdapters.adaptOrder(((OkCoinOrdersResult) payload).getOrders()[0]);
               log.debug(order.toString());
-              req = requests.take(new RequestIdentifier(event.getEventType()));
-              if (req != null)
-                req.set(order);
-              else
-                log.error("Unexpected {} event: {}", event.getEventType(), event);
+              requests.processResponse(event, new RequestIdentifier(event.getEventType()), order);
               break;
             case ERROR:
               if (payload instanceof OkCoinPlaceOrderError) {
-
-                log.debug("Processed error for order placement");
-                req = requests.take(new RequestIdentifier(ExchangeEventType.ORDER_ADDED));
-                if (req != null)
-                  req.set(payload);
-                else
-                  log.error("Unexpected {} event: {}", event.getEventType(), event);
-
+                requests.processResponse(event, new RequestIdentifier(ExchangeEventType.ORDER_ADDED), payload);
               } else if (payload instanceof OkCoinCancelOrderError) {
-
-                log.debug("Processed error for {}", ((OkCoinCancelOrderError) payload).getOrderId());
-                req = requests.take(new RequestIdentifier(ExchangeEventType.ORDER_CANCELED));
-                if (req != null)
-                  req.set(false);
-                else
-                  log.error("Unexpected {} event: {}", event.getEventType(), event);
-
+                requests.processResponse(event, new RequestIdentifier(ExchangeEventType.ORDER_CANCELED), false);
               } else if (payload instanceof OkCoinGetOrderInfoError) {
-
-                log.debug("Processed error for {}", ((OkCoinGetOrderInfoError) payload).getOrderId());
-                req = requests.take(new RequestIdentifier(ExchangeEventType.USER_ORDER));
-                if (req != null)
-                  req.set(null);
-                else
-                  log.error("Unexpected {} event: {}", event.getEventType(), event);
+                requests.processResponse(event, new RequestIdentifier(ExchangeEventType.USER_ORDER), null);
               } else
                 log.error("Unprocessed error: {}", event.toString());
               break;

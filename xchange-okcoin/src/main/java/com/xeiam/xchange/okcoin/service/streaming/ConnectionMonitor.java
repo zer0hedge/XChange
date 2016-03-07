@@ -27,12 +27,12 @@ class ConnectionMonitor extends TimerTask {
       Thread.currentThread().setName(name);
     
     if (System.currentTimeMillis() - lastResponseTime > checkTime) {
-      client.reConnect();
+      client.reconnect();
     }
     try {
       client.sendPing();
     } catch (RejectedExecutionException reject) {
-      client.reConnect();
+      client.reconnect();
     }
   }
 }

@@ -4,7 +4,22 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.xeiam.xchange.service.streaming.ExchangeEvent;
+
 class RequestStore {
+  
+  
+  void processResponse(ExchangeEvent event, RequestIdentifier id, Object result) throws InterruptedException {
+    OkCoinWebSocketAPIRequest req = take(id);
+    if (req != null)
+      req.set(result);
+    else
+      log.error("Unexpected {} event: {}", event.getEventType(), event);
+  }
+  
 
   synchronized void put(OkCoinWebSocketAPIRequest request) throws InterruptedException {
     
@@ -17,7 +32,10 @@ class RequestStore {
   }
 
   synchronized OkCoinWebSocketAPIRequest take(RequestIdentifier id) throws InterruptedException {
-
+    
+    if (requests.get(id) == null)
+      return null;
+    
     OkCoinWebSocketAPIRequest request = requests.get(id).take();
     if (requests.get(id).size() == 0)
       requests.remove(id);
@@ -35,4 +53,5 @@ class RequestStore {
 
   private ConcurrentMap<RequestIdentifier, ArrayBlockingQueue<OkCoinWebSocketAPIRequest>> requests = new ConcurrentHashMap<>();
 
+  private Logger log = LoggerFactory.getLogger(this.getClass());
 }
