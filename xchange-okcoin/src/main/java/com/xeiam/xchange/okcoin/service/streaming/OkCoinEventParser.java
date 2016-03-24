@@ -111,7 +111,7 @@ class OkCoinEventParser {
       putEvent(ExchangeEventType.ORDER_CANCELED, result);
     } else {
       putEvent(ExchangeEventType.ERROR,
-          new OkCoinCancelOrderError(false, node.get("errorcode").asInt(), node.get("order_id").asLong()));
+          new OkCoinCancelOrderError(false, node.get("errorcode").asInt(), -1));
     }
   }
 
