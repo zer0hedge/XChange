@@ -144,7 +144,7 @@ public class OkCoinStreamingTradeServiceTest {
     String id = sut.placeLimitOrder(limitOrder);
 
     stubCancelOrderChannelSubscription(ExchangeEventType.ORDER_CANCELED, new OkCoinTradeResult(true, 0, 101));
-    sut.cancelOrder(id);
+    sut.cancelOrder(id, limitOrder.getCurrencyPair());
 
   }
 
@@ -158,7 +158,7 @@ public class OkCoinStreamingTradeServiceTest {
     String id = sut.placeLimitOrder(limitOrder);
 
     stubCancelOrderChannelSubscription(ExchangeEventType.ERROR, new OkCoinCancelOrderError(false, 10009, Long.valueOf(id)));
-    sut.cancelOrder(id);
+    sut.cancelOrder(id, limitOrder.getCurrencyPair());
 
   }
 
@@ -178,7 +178,7 @@ public class OkCoinStreamingTradeServiceTest {
 
     stubOrderInfoChannelSubscription(ExchangeEventType.USER_ORDER,
         new OkCoinOrdersResult(true, 0, new OkCoinOrder[] { serverOrder }));
-    LimitOrder response = sut.getOrder(id);
+    LimitOrder response = sut.getOrder(id, limitOrder.getCurrencyPair());
 
     assertEquals(id, response.getId());
     assertEquals(limitOrder.getTradableAmount().divide(new BigDecimal("2")), response.getTradableAmount());
@@ -201,8 +201,8 @@ public class OkCoinStreamingTradeServiceTest {
     
     stubOrderInfoChannelSubscription(ExchangeEventType.USER_ORDER, new OkCoinOrdersResult(true, 0, new OkCoinOrder[] { serverOrder }));
     
-    LimitOrder response = sut.getOrder(id);
-    LimitOrder response2 = sut.getOrder(id);
+    LimitOrder response = sut.getOrder(id, limitOrder.getCurrencyPair());
+    LimitOrder response2 = sut.getOrder(id, limitOrder.getCurrencyPair());
 
     assertThat(response).isEqualTo(response2);
 
@@ -224,11 +224,11 @@ public class OkCoinStreamingTradeServiceTest {
 
     stubOrderInfoChannelSubscription(ExchangeEventType.USER_ORDER,
         new OkCoinOrdersResult(true, 0, new OkCoinOrder[] { serverOrder }));
-    LimitOrder response = sut.getOrder(id);
+    LimitOrder response = sut.getOrder(id, limitOrder.getCurrencyPair());
 
     stubCancelOrderChannelSubscription(ExchangeEventType.ERROR,
         new OkCoinCancelOrderError(false, 10009, Long.valueOf(id)));
-    sut.cancelOrder(id);
+    sut.cancelOrder(id, limitOrder.getCurrencyPair());
 
     assertThat(response).isNotNull();
 
@@ -246,7 +246,7 @@ public class OkCoinStreamingTradeServiceTest {
 
     stubOrderInfoChannelSubscription(ExchangeEventType.ERROR, new OkCoinGetOrderInfoError(false, 10002, Long.valueOf(id)));
     
-    sut.getOrder(id);
+    sut.getOrder(id, limitOrder.getCurrencyPair());
 
   }
 

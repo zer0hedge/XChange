@@ -2,6 +2,7 @@ package com.xeiam.xchange.service.streaming;
 
 import java.io.IOException;
 
+import com.xeiam.xchange.currency.CurrencyPair;
 import com.xeiam.xchange.dto.trade.LimitOrder;
 import com.xeiam.xchange.exceptions.ExchangeException;
 import com.xeiam.xchange.exceptions.NotAvailableFromExchangeException;
@@ -62,7 +63,7 @@ public interface StreamingTradeService extends StreamingExchangeService {
    *           - Indication that a networking error occurred while fetching JSON
    *           data
    */
-  public void cancelOrder(String orderId)
+  public void cancelOrder(String orderId, CurrencyPair currencyPair)
       throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException;;
 
   /**
@@ -83,7 +84,7 @@ public interface StreamingTradeService extends StreamingExchangeService {
    *           - Indication that a networking error occurred while fetching JSON
    *           data
    */
-  public LimitOrder getOrder(String orderId)
+  public LimitOrder getOrder(String orderId, CurrencyPair currencyPair)
       throws ExchangeException, NotAvailableFromExchangeException, NotYetImplementedForExchangeException, IOException;;
 
 }

@@ -111,17 +111,17 @@ public class TradeAPIIntegration {
 		String orderId = sut.placeLimitOrder(limitOrder);
 		assertThat(orderId).isNotEqualTo("-1");
 		
-		LimitOrder o = sut.getOrder(orderId);
+		LimitOrder o = sut.getOrder(orderId, limitOrder.getCurrencyPair());
 		assertThat(o.getId()).isEqualTo(orderId);
 
-		sut.cancelOrder(orderId);
+		sut.cancelOrder(orderId, limitOrder.getCurrencyPair());
 		
 	}
 
 
 	@Test(expected = ExchangeException.class)
 	public void shouldNotCancelNonexistentOrder() throws NotAvailableFromExchangeException, NotYetImplementedForExchangeException, ExchangeException, IOException, InterruptedException, ExecutionException, TimeoutException {
-		sut.cancelOrder("1");
+		sut.cancelOrder("1", CurrencyPair.BTC_USD);
 	}
 	
 	@Ignore
@@ -134,10 +134,10 @@ public class TradeAPIIntegration {
 		String orderId = sut.placeLimitOrder(limitOrder);
 		assertThat(orderId).isNotEqualTo("-1");
 		
-		assertThat(sut.getOrder(orderId).getId()).isEqualTo(orderId);
-		assertThat(sut.getOrder(orderId).getId()).isEqualTo(orderId);
+		assertThat(sut.getOrder(orderId, currencyPair).getId()).isEqualTo(orderId);
+		assertThat(sut.getOrder(orderId, currencyPair).getId()).isEqualTo(orderId);
 		
-		sut.cancelOrder(orderId);
+		sut.cancelOrder(orderId, currencyPair);
 		
 	}
 
