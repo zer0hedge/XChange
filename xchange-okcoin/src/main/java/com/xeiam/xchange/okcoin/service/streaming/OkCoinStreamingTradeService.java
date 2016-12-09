@@ -173,26 +173,27 @@ public class OkCoinStreamingTradeService extends OkCoinBaseStreamingService impl
 //						OkCoinWebSocketAPIRequest req;
 						switch (event.getEventType()) {
 						case ORDER_ADDED:
-							requests.processResponse(event, new RequestIdentifier(event.getEventType()),
+							requests.processResponse(event, new RequestIdentifier(null, event.getEventType()),
 									(OkCoinTradeResult) payload);
 							break;
 						case ORDER_CANCELED:
-							requests.processResponse(event, new RequestIdentifier(event.getEventType()), true);
+							requests.processResponse(event, new RequestIdentifier(null, event.getEventType()), true);
 							break;
 						case USER_ORDER:
 							LimitOrder order = OkCoinAdapters.adaptOrder(((OkCoinOrdersResult) payload).getOrders()[0]);
 							log.debug(order.toString());
-							requests.processResponse(event, new RequestIdentifier(event.getEventType()), order);
+							requests.processResponse(event, new RequestIdentifier(Long.valueOf(order.getId()), event.getEventType()), order);
 							break;
 						case ERROR:
 							if (payload instanceof OkCoinPlaceOrderError) {
-								requests.processResponse(event, new RequestIdentifier(ExchangeEventType.ORDER_ADDED),
+								requests.processResponse(event, new RequestIdentifier(null, ExchangeEventType.ORDER_ADDED),
 										payload);
 							} else if (payload instanceof OkCoinCancelOrderError) {
-								requests.processResponse(event, new RequestIdentifier(ExchangeEventType.ORDER_CANCELED),
+								requests.processResponse(event, new RequestIdentifier(null, ExchangeEventType.ORDER_CANCELED),
 										false);
 							} else if (payload instanceof OkCoinGetOrderInfoError) {
-								requests.processResponse(event, new RequestIdentifier(ExchangeEventType.USER_ORDER),
+								requests.processResponse(event, new RequestIdentifier(((OkCoinGetOrderInfoError) payload).getOrderId(), 
+										ExchangeEventType.USER_ORDER),
 										null);
 							} else
 								log.error("Unprocessed error: {}", event.toString());

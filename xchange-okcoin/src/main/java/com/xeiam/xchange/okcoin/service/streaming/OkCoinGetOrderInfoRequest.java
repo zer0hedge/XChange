@@ -14,11 +14,11 @@ import com.xeiam.xchange.service.streaming.ExchangeEventType;
 
 public class OkCoinGetOrderInfoRequest extends OkCoinWebSocketAPIRequest implements Future<LimitOrder> {
 
-//	private String orderId;
+	private String orderId;
 
 	OkCoinGetOrderInfoRequest(String orderId, String symbol, ChannelProvider channelProvider,  String apikey, OkCoinDigest signatureCreator) {
 		super(channelProvider);
-//		this.orderId = orderId;
+		this.orderId = orderId;
 		params = new HashMap<String, String>();
 		params.put("api_key", apikey);
 		params.put("symbol", symbol);
@@ -28,7 +28,7 @@ public class OkCoinGetOrderInfoRequest extends OkCoinWebSocketAPIRequest impleme
 	}
 
 	RequestIdentifier getIdentifier() {
-		return new RequestIdentifier(ExchangeEventType.USER_ORDER);
+		return new RequestIdentifier(Long.valueOf(orderId), ExchangeEventType.USER_ORDER);
 	}
 
 	@Override

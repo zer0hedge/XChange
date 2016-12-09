@@ -55,7 +55,7 @@ public class OkCoinPlaceLimitOrderRequest extends OkCoinWebSocketAPIRequest impl
   
   @Override
   RequestIdentifier getIdentifier() {
-    return new RequestIdentifier(ExchangeEventType.ORDER_ADDED);
+    return new RequestIdentifier(null, ExchangeEventType.ORDER_ADDED);
   }
 
 

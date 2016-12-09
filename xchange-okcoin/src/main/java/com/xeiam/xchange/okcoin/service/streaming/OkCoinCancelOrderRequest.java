@@ -13,11 +13,9 @@ import com.xeiam.xchange.service.streaming.ExchangeEventType;
 
 public class OkCoinCancelOrderRequest extends OkCoinWebSocketAPIRequest implements Future<Boolean> {
 
-//	private String orderId;
 
 	OkCoinCancelOrderRequest(String orderId, String symbol, ChannelProvider channelProvider,  String apikey, OkCoinDigest signatureCreator) {
 		super(channelProvider);
-//		this.orderId = orderId;
 		params = new HashMap<String, String>();
 		params.put("api_key", apikey);
 		params.put("symbol", symbol);
@@ -26,9 +24,13 @@ public class OkCoinCancelOrderRequest extends OkCoinWebSocketAPIRequest implemen
 		params.put("sign", sign);
 	}
 
+	
+	/*
+	 * Can't use orderId as identifier as error responses do not provide orderId
+	 */
 	@Override
 	RequestIdentifier getIdentifier() {
-		return new RequestIdentifier(ExchangeEventType.ORDER_CANCELED);
+		return new RequestIdentifier(null, ExchangeEventType.ORDER_CANCELED);
 	}
 
 	@Override
